@@ -164,7 +164,7 @@ var Kygotchi = (function() {
   var unbindActions = function() {
     $.each(bindings, function(key, selector) {
       if(key!=='reset') {
-        $(selector).unbind();
+        $(selector).off();
       }
     });
   };
