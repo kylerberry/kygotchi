@@ -1,0 +1,19 @@
+{
+  "name": "kygotchi",
+  "version": "1.0.0",
+  "description": "A Tamagotchi Clone for Me",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "tamagotchi",
+    "game",
+    "javascript"
+  ],
+  "author": "Kyler Berry",
+  "license": "ISC",
+  "dependencies": {
+    "jquery": "^2.2.3"
+  }
+}
