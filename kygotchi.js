@@ -1,8 +1,8 @@
 //Module Augmentation Pattern
 var Kygotchi = (function() {
-  // @todo need to fetch states from LocalStorage
+  // fetch states from LocalStorage
+  var localSettings = localStorage.getItem('gotchi') ? JSON.parse(localStorage.getItem('gotchi')) : {};
 
-  //states are options get/set from local storage (updated on timePasses)
   var defaults = {
     birthday: new Date('September 22, 1987'),
     isSleeping: false,
@@ -12,13 +12,13 @@ var Kygotchi = (function() {
     last_interaction: 'date'
   };
 
+  var ky = $.extend(ky, defaults, localSettings);
+
   var bindings = {},
     maxThreshold = 15, //limit on health and other states
     timeInterval = 1000, //time interval for timePasses()
     timer = null,
     medicineCount = 2; //number of medicines available
-
-  var ky = $.extend({}, defaults);
 
   /*
   * initialize bindings and timer
@@ -50,6 +50,7 @@ var Kygotchi = (function() {
   */
   ky.die = function() {
     clearInterval(timer);
+    localStorage.removeItem('gotchi');
     unbindActions();
   };
 
@@ -127,6 +128,13 @@ var Kygotchi = (function() {
   };
 
   /*
+  * Save Gotchi Props
+  */
+  ky.save = function() {
+    localStorage.setItem('gotchi', JSON.stringify(_.pick(ky, _.keys(defaults))));
+  };
+
+  /*
   * the game loop
   */
   var timePasses = function() {
@@ -155,6 +163,8 @@ var Kygotchi = (function() {
 
     if(!ky.isAlive()) {
       ky.die();
+    } else {
+      ky.save();
     }
   };
 
@@ -202,10 +212,6 @@ var Kygotchi = (function() {
       'happinessLevel: ' + ky.happinessLevel + '<br/>' +
       'restLevel: ' + ky.restLevel + '<br/><br/>' +
       'healthLevel: ' + ky.calcHealth() + '<br/><br/>' +
-      // 'isSleeping: ' + ky.isSleeping + '<br/>' +
-      // 'isAlive: ' + ky.isAlive() + '<br/>' +
-      // 'isSick: ' + (ky.calcHealth() < 4) + '<br/>' +
-      // 'fatLevel: ' + fatLevel() + '<br/><br/>' +
 
       '<strong>I am:</strong> ' + (ky.isAlive()?'alive':'dead') +
       ', '+ (ky.isSleeping?'sleeping':'awake') +
