@@ -40,7 +40,7 @@ var Kygotchi = (function() {
   * toggle the sleep state
   */
   ky.toggleSleep = function() {
-    ky.isSleeping = !ky.isSleeping
+    ky.isSleeping = !ky.isSleeping;
     $(bindings['toggleSleep']).html(ky.isSleeping ? 'Wake' : 'Sleep');
     debugStats();
   };
