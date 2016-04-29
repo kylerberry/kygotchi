@@ -207,16 +207,11 @@ var Kygotchi = (function() {
   * Output properties for debugging
   */
   var debugStats = function() {
-    $('#kygotchi_debug').html(
+    $('#debug').html(
+      'healthLevel: ' + ky.calcHealth() + '<br/>' +
       'foodLevel: ' + ky.foodLevel + '<br/>' +
       'happinessLevel: ' + ky.happinessLevel + '<br/>' +
-      'restLevel: ' + ky.restLevel + '<br/><br/>' +
-      'healthLevel: ' + ky.calcHealth() + '<br/><br/>' +
-
-      '<strong>I am:</strong> ' + (ky.isAlive()?'alive':'dead') +
-      ', '+ (ky.isSleeping?'sleeping':'awake') +
-      ', '+ ((ky.calcHealth() < 4)?'sick':'healthy') +
-      ', and '+ fatLevel() + '<br/></br>'
+      'restLevel: ' + ky.restLevel + '<br/>'
     );
   };
 
