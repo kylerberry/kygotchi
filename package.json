@@ -14,6 +14,7 @@
   "author": "Kyler Berry",
   "license": "ISC",
   "dependencies": {
+    "gsap": "^1.18.4",
     "jquery": "^2.2.3",
     "lodash": "^4.10.0",
     "normalize.css": "^4.1.1"
