@@ -1,4 +1,12 @@
-//Module Augmentation Pattern
+$('document').ready(function() {
+  Kygotchi.init({
+    'feed' : '#feed',
+    'play' : '#play',
+    'reset': '#reset',
+    'toggleSleep' : '#toggleSleep',
+    'medicine' : '#medicine'
+  });
+});
 var Kygotchi = (function() {
   // fetch states from LocalStorage
   var localSettings = localStorage.getItem('gotchi') ? JSON.parse(localStorage.getItem('gotchi')) : {};
@@ -131,7 +139,20 @@ var Kygotchi = (function() {
   * Save Gotchi Props
   */
   ky.save = function() {
-    localStorage.setItem('gotchi', JSON.stringify(_.pick(ky, _.keys(defaults))));
+    localStorage.setItem('gotchi', JSON.stringify(pick(ky, Object.keys(defaults))));
+  };
+
+  /* pick the props we need to save from
+  * the ky obj with a set of keys provided from defaults
+  */
+  var pick = function(obj, keys) {
+    var acc = {};
+    keys.forEach(function(k) {
+      if(obj.hasOwnProperty(k)) {
+        acc[k] = obj[k];
+      }
+    });
+    return acc;
   };
 
   /*
@@ -217,3 +238,7 @@ var Kygotchi = (function() {
 
   return ky;
 }());
+
+var Animate = (function() {
+  return this;
+})();
