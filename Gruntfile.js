@@ -32,8 +32,12 @@ module.exports = function(grunt) {
     },
     watch: {
       scripts: {
-        files: ['src/**/*.js'],
-        tasks: ['concat', 'uglify'],
+        files: ['src/js/**/*.js'],
+        tasks: ['concat', 'uglify']
+      },
+      sass: {
+        files: ['src/sass/**/*.scss'],
+        tasks: ['sass']
       }
     },
     uglify: {
@@ -47,15 +51,30 @@ module.exports = function(grunt) {
         src: "public/js/built.js",
         dest: "public/js/built.min.js"
       }
+    },
+    sass: {
+      options: {
+          outputStyle: 'compressed',
+          includePaths: [
+            './node_modules/normalize-scss/sass/'
+          ]
+      },
+      dist: {
+          files: {
+              'public/css/main.css': 'src/sass/main.scss'
+          }
+      }
     }
   });
 
+  grunt.loadNpmTasks("grunt-sass");
   grunt.loadNpmTasks("grunt-contrib-watch");
   grunt.loadNpmTasks("grunt-contrib-copy");
   grunt.loadNpmTasks("grunt-contrib-concat");
   grunt.loadNpmTasks("grunt-contrib-uglify");
 
+
   // Default task(s)
-  grunt.registerTask("default", ["copy", "concat", "uglify"]);
+  grunt.registerTask("default", ["copy", "sass", "concat", "uglify"]);
 
 };

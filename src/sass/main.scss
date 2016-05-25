@@ -1,3 +1,7 @@
+@import "normalize";
+
+@include normalize;
+
 @keyframes hover {
   0% { margin-top: 0; margin-bottom: -3px; }
   50% { margin-top: -3px; margin-bottom: 0; }
@@ -46,17 +50,10 @@ body {
   position: relative;
   margin: 0 auto;
   z-index: 1;
-}
 
-.ky.blink {
-
-}
-
-.ky.happy {
-  background-position: 0px -145px;
-  width: 114px;
-  height: 145px;
-}
-.ky.happy.blink {
-
+  &.happy {
+    background-position: 0px -145px;
+    width: 114px;
+    height: 145px;
+  }
 }
