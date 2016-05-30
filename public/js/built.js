@@ -1,13 +1,59 @@
 $('document').ready(function() {
   Kygotchi.init({
-    'feed' : '#feed',
-    'play' : '#play',
-    'reset': '#reset',
-    'toggleSleep' : '#toggleSleep',
-    'medicine' : '#medicine'
+    'gotchi' : '.ky',
+    'bindings' : {
+      'feed' : '#feed',
+      'play' : '#play',
+      'reset': '#reset',
+      'toggleSleep' : '#toggleSleep',
+      'medicine' : '#medicine'
+    }
   });
 });
-var Kygotchi = (function() {
+var Animate = (function() {
+
+  var selector = '',
+    blinkTimer = null;
+
+  this.init = function(slct) {
+    selector = $(slct);
+
+    //remove dead look on restart
+    if(selector.hasClass('dead')) {
+      selector.removeClass('dead');
+    }
+
+    //blink
+    blinkTimer = setInterval(function(){
+      if(Math.floor(Math.random() * 10) % 4 == 0) {
+        this.blink();
+      }
+    }, 1000);
+  };
+
+  this.blink = function() {
+    selector.addClass('blink');
+    setTimeout(function() {
+      selector.removeClass('blink');
+    }, 200);
+  };
+
+  /*this.toggleSleep = function(selector, sleep) {
+    if(sleep) {
+      selector.addClass('sleep');
+    }
+
+    selector.addClass('sleep');
+  };*/
+
+  this.die = function() {
+    clearInterval(blinkTimer);
+    selector.addClass('dead');
+  };
+
+  return this;
+})();
+var Kygotchi = (function(animate) {
   // fetch states from LocalStorage
   var localSettings = localStorage.getItem('gotchi') ? JSON.parse(localStorage.getItem('gotchi')) : {};
 
@@ -20,28 +66,33 @@ var Kygotchi = (function() {
     last_interaction: 'date'
   };
 
+  var debugCnt = 0;
+
   var ky = $.extend(ky, defaults, localSettings);
 
   var bindings = {},
     maxThreshold = 15, //limit on health and other states
     timeInterval = 1000, //time interval for timePasses()
     timer = null,
-    medicineCount = 2; //number of medicines available
+    medicineCount = 2, //number of medicines available
+    mainEl = {};
 
   /*
   * initialize bindings and timer
   */
   ky.init = function(options) {
     //take in action bindings to bind/unbind in a clean way
-    bindings = $.extend(bindings, options);
+    bindings = $.extend(bindings, options.bindings);
 
     $.each(bindings, function(method, selector) {
-      $(selector).on('click', function() {
-        ky[method]();
-      });
+      $(selector).on('click', ky[method]);
     });
 
     timer = startTimer();
+
+    mainEl = options.gotchi ? options.gotchi : mainEl; //save this state in the animator?
+    animate.init(mainEl);
+
   };
 
   /*
@@ -50,6 +101,7 @@ var Kygotchi = (function() {
   ky.toggleSleep = function() {
     ky.isSleeping = !ky.isSleeping;
     $(bindings['toggleSleep']).html(ky.isSleeping ? 'Wake' : 'Sleep');
+    // animate.sleep(options.gotchi);
     debugStats();
   };
 
@@ -57,6 +109,7 @@ var Kygotchi = (function() {
   * Gotchi dies. Kill the timer and unbind actions
   */
   ky.die = function() {
+    animate.die();
     clearInterval(timer);
     localStorage.removeItem('gotchi');
     unbindActions();
@@ -117,6 +170,7 @@ var Kygotchi = (function() {
   ky.reset = function() {
     ky = $.extend(ky, defaults);
     clearInterval(timer);
+    unbindActions();
     ky.init(bindings);
   };
 
@@ -159,6 +213,7 @@ var Kygotchi = (function() {
   * the game loop
   */
   var timePasses = function() {
+
     if(ky.foodLevel) {
       ky.foodLevel--;
     }
@@ -194,7 +249,7 @@ var Kygotchi = (function() {
   */
   var unbindActions = function() {
     $.each(bindings, function(key, selector) {
-      if(key!=='reset') {
+      if(key !== 'reset') {
         $(selector).off();
       }
     });
@@ -237,8 +292,4 @@ var Kygotchi = (function() {
   };
 
   return ky;
-}());
-
-var Animate = (function() {
-  return this;
-})();
+}(Animate || {}));

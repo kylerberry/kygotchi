@@ -51,9 +51,18 @@ body {
   margin: 0 auto;
   z-index: 1;
 
+  &.blink {
+    background-position: -112px 0;
+  }
+
   &.happy {
     background-position: 0px -145px;
     width: 114px;
     height: 145px;
+  }
+
+  &.dead {
+    background-position: -223px -293px;
+    transform: rotate(10deg);
   }
 }
