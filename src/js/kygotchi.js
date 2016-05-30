@@ -1,4 +1,4 @@
-var Kygotchi = (function() {
+var Kygotchi = (function(animate) {
   // fetch states from LocalStorage
   var localSettings = localStorage.getItem('gotchi') ? JSON.parse(localStorage.getItem('gotchi')) : {};
 
@@ -11,28 +11,33 @@ var Kygotchi = (function() {
     last_interaction: 'date'
   };
 
+  var debugCnt = 0;
+
   var ky = $.extend(ky, defaults, localSettings);
 
   var bindings = {},
     maxThreshold = 15, //limit on health and other states
     timeInterval = 1000, //time interval for timePasses()
     timer = null,
-    medicineCount = 2; //number of medicines available
+    medicineCount = 2, //number of medicines available
+    mainEl = {};
 
   /*
   * initialize bindings and timer
   */
   ky.init = function(options) {
     //take in action bindings to bind/unbind in a clean way
-    bindings = $.extend(bindings, options);
+    bindings = $.extend(bindings, options.bindings);
 
     $.each(bindings, function(method, selector) {
-      $(selector).on('click', function() {
-        ky[method]();
-      });
+      $(selector).on('click', ky[method]);
     });
 
     timer = startTimer();
+
+    mainEl = options.gotchi ? options.gotchi : mainEl; //save this state in the animator?
+    animate.init(mainEl);
+
   };
 
   /*
@@ -41,6 +46,7 @@ var Kygotchi = (function() {
   ky.toggleSleep = function() {
     ky.isSleeping = !ky.isSleeping;
     $(bindings['toggleSleep']).html(ky.isSleeping ? 'Wake' : 'Sleep');
+    // animate.sleep(options.gotchi);
     debugStats();
   };
 
@@ -48,6 +54,7 @@ var Kygotchi = (function() {
   * Gotchi dies. Kill the timer and unbind actions
   */
   ky.die = function() {
+    animate.die();
     clearInterval(timer);
     localStorage.removeItem('gotchi');
     unbindActions();
@@ -108,6 +115,7 @@ var Kygotchi = (function() {
   ky.reset = function() {
     ky = $.extend(ky, defaults);
     clearInterval(timer);
+    unbindActions();
     ky.init(bindings);
   };
 
@@ -150,6 +158,7 @@ var Kygotchi = (function() {
   * the game loop
   */
   var timePasses = function() {
+
     if(ky.foodLevel) {
       ky.foodLevel--;
     }
@@ -185,7 +194,7 @@ var Kygotchi = (function() {
   */
   var unbindActions = function() {
     $.each(bindings, function(key, selector) {
-      if(key!=='reset') {
+      if(key !== 'reset') {
         $(selector).off();
       }
     });
@@ -228,4 +237,4 @@ var Kygotchi = (function() {
   };
 
   return ky;
-}());
+}(Animate || {}));
