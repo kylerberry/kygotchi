@@ -185,7 +185,20 @@ var Kygotchi = (function(animate) {
     if(!ky.isAlive()) {
       ky.die();
     } else {
+      ky.updateMeters();
       ky.save();
+    }
+  };
+
+  /* update animations based on healthLevel*/
+  ky.updateMeters = function() {
+    var health = ky.calcHealth();
+    if(health > 8) {
+      animate.emotion('happy');
+    } else if(health <= 5) {
+      animate.emotion('sad');
+    } else if(health > 5 && health <= 8) {
+      animate.emotion();
     }
   };
 

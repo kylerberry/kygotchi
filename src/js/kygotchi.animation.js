@@ -11,6 +11,11 @@ var Animate = (function() {
       selector.removeClass('dead');
     }
 
+    //on reset
+    if(blinkTimer) {
+      clearInterval(blinkTimer);
+    }
+
     //blink
     blinkTimer = setInterval(function(){
       if(Math.floor(Math.random() * 10) % 4 == 0) {
@@ -26,17 +31,27 @@ var Animate = (function() {
     }, 200);
   };
 
-  /*this.toggleSleep = function(selector, sleep) {
-    if(sleep) {
-      selector.addClass('sleep');
+  this.emotion = function(state) {
+    if(!state && state !== prevState) {
+      selector.removeClass();
+      selector.addClass('ky');
     }
 
-    selector.addClass('sleep');
-  };*/
+    if(!selector.hasClass(state)) {
+      selector.removeClass();
+      selector.addClass('ky');
+      if(state) {
+        selector.addClass(state);
+      }
+    }
+
+    var prevState = state;
+  };
 
   this.die = function() {
     clearInterval(blinkTimer);
-    selector.addClass('dead');
+    selector.removeClass();
+    selector.addClass('ky dead');
   };
 
   return this;
