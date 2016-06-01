@@ -10,12 +10,6 @@ $('document').ready(function() {
     }
   });
 });
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-var Kygotchi = (function() {
-=======
->>>>>>> Stashed changes
 var Animate = (function() {
 
   var selector = '',
@@ -29,14 +23,11 @@ var Animate = (function() {
       selector.removeClass('dead');
     }
 
-<<<<<<< Updated upstream
-=======
     //on reset
     if(blinkTimer) {
       clearInterval(blinkTimer);
     }
 
->>>>>>> Stashed changes
     //blink
     blinkTimer = setInterval(function(){
       if(Math.floor(Math.random() * 10) % 4 == 0) {
@@ -52,19 +43,6 @@ var Animate = (function() {
     }, 200);
   };
 
-<<<<<<< Updated upstream
-  /*this.toggleSleep = function(selector, sleep) {
-    if(sleep) {
-      selector.addClass('sleep');
-    }
-
-    selector.addClass('sleep');
-  };*/
-
-  this.die = function() {
-    clearInterval(blinkTimer);
-    selector.addClass('dead');
-=======
   this.emotion = function(state) {
     if(!state && state !== prevState) {
       selector.removeClass();
@@ -86,16 +64,11 @@ var Animate = (function() {
     clearInterval(blinkTimer);
     selector.removeClass();
     selector.addClass('ky dead');
->>>>>>> Stashed changes
   };
 
   return this;
 })();
 var Kygotchi = (function(animate) {
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
   // fetch states from LocalStorage
   var localSettings = localStorage.getItem('gotchi') ? JSON.parse(localStorage.getItem('gotchi')) : {};
 
