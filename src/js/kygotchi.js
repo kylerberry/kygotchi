@@ -11,8 +11,6 @@ var Kygotchi = (function(animate) {
     last_interaction: 'date'
   };
 
-  var debugCnt = 0;
-
   var ky = $.extend(ky, defaults, localSettings);
 
   var bindings = {},
@@ -38,6 +36,7 @@ var Kygotchi = (function(animate) {
     mainEl = options.gotchi ? options.gotchi : mainEl; //save this state in the animator?
     animate.init(mainEl);
 
+    ky.updateMeters();
   };
 
   /*

@@ -1,6 +1,6 @@
 $('document').ready(function() {
   Kygotchi.init({
-    'gotchi' : '.ky',
+    'gotchi' : '#gotchi',
     'bindings' : {
       'feed' : '#feed',
       'play' : '#play',
@@ -46,12 +46,10 @@ var Animate = (function() {
   this.emotion = function(state) {
     if(!state && state !== prevState) {
       selector.removeClass();
-      selector.addClass('ky');
     }
 
     if(!selector.hasClass(state)) {
       selector.removeClass();
-      selector.addClass('ky');
       if(state) {
         selector.addClass(state);
       }
@@ -63,7 +61,7 @@ var Animate = (function() {
   this.die = function() {
     clearInterval(blinkTimer);
     selector.removeClass();
-    selector.addClass('ky dead');
+    selector.addClass('dead');
   };
 
   return this;
@@ -80,8 +78,6 @@ var Kygotchi = (function(animate) {
     happinessLevel: 10,
     last_interaction: 'date'
   };
-
-  var debugCnt = 0;
 
   var ky = $.extend(ky, defaults, localSettings);
 
@@ -108,6 +104,7 @@ var Kygotchi = (function(animate) {
     mainEl = options.gotchi ? options.gotchi : mainEl; //save this state in the animator?
     animate.init(mainEl);
 
+    ky.updateMeters();
   };
 
   /*

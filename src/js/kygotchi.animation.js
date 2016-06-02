@@ -34,12 +34,10 @@ var Animate = (function() {
   this.emotion = function(state) {
     if(!state && state !== prevState) {
       selector.removeClass();
-      selector.addClass('ky');
     }
 
     if(!selector.hasClass(state)) {
       selector.removeClass();
-      selector.addClass('ky');
       if(state) {
         selector.addClass(state);
       }
@@ -51,7 +49,7 @@ var Animate = (function() {
   this.die = function() {
     clearInterval(blinkTimer);
     selector.removeClass();
-    selector.addClass('ky dead');
+    selector.addClass('dead');
   };
 
   return this;
