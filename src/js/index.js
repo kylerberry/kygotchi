@@ -1,6 +1,6 @@
 $('document').ready(function() {
   Kygotchi.init({
-    'gotchi' : '.ky',
+    'gotchi' : '#gotchi',
     'bindings' : {
       'feed' : '#feed',
       'play' : '#play',
