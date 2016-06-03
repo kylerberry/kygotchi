@@ -75,4 +75,8 @@ body {
       background-position: -111px -292px;
     }
   }
+
+  &.sleep {
+    @extend .blink;
+  }
 }
