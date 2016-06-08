@@ -20,11 +20,11 @@ var Animate = (function() {
     }
 
     //blink
-    /*blinkTimer = setInterval(function(){
+    blinkTimer = setInterval(function(){
       if(Math.floor(Math.random() * 10) % 4 == 0) {
         this.blink();
       }
-    }, 1000);*/
+    }, 1000);
   };
 
   this.blink = function() {
