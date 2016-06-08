@@ -44,8 +44,7 @@ var Kygotchi = (function(animate) {
   */
   ky.toggleSleep = function() {
     ky.isSleeping = !ky.isSleeping;
-    $(bindings['toggleSleep']).html(ky.isSleeping ? 'Wake' : 'Sleep');
-    // animate.sleep(options.gotchi);
+    animate.toggleSleep(ky.isSleeping);
     debugStats();
   };
 
@@ -191,13 +190,15 @@ var Kygotchi = (function(animate) {
 
   /* update animations based on healthLevel*/
   ky.updateMeters = function() {
-    var health = ky.calcHealth();
-    if(health > 8) {
-      animate.emotion('happy');
-    } else if(health <= 5) {
-      animate.emotion('sad');
-    } else if(health > 5 && health <= 8) {
-      animate.emotion();
+    if(!ky.isSleeping) {
+      var health = ky.calcHealth();
+      if(health > 8) {
+        animate.emotion('happy');
+      } else if(health <= 5) {
+        animate.emotion('sad');
+      } else if(health > 5 && health <= 8) {
+        animate.emotion();
+      }
     }
   };
 

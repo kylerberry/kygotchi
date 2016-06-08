@@ -1,3 +1,6 @@
+// @todo implement a finite state machine
+// http://gameprogrammingpatterns.com/state.html
+
 var Animate = (function() {
 
   var selector = '',
@@ -44,6 +47,14 @@ var Animate = (function() {
     }
 
     var prevState = state;
+  };
+
+  this.toggleSleep = function(isSleeping) {
+    selector.removeClass();
+
+    if(isSleeping) {
+      selector.addClass('sleep');
+    }
   };
 
   this.die = function() {

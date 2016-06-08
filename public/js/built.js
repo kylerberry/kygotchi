@@ -10,6 +10,9 @@ $('document').ready(function() {
     }
   });
 });
+// @todo implement a finite state machine
+// http://gameprogrammingpatterns.com/state.html
+
 var Animate = (function() {
 
   var selector = '',
@@ -29,11 +32,11 @@ var Animate = (function() {
     }
 
     //blink
-    blinkTimer = setInterval(function(){
+    /*blinkTimer = setInterval(function(){
       if(Math.floor(Math.random() * 10) % 4 == 0) {
         this.blink();
       }
-    }, 1000);
+    }, 1000);*/
   };
 
   this.blink = function() {
@@ -56,6 +59,14 @@ var Animate = (function() {
     }
 
     var prevState = state;
+  };
+
+  this.toggleSleep = function(isSleeping) {
+    selector.removeClass();
+
+    if(isSleeping) {
+      selector.addClass('sleep');
+    }
   };
 
   this.die = function() {
@@ -112,8 +123,7 @@ var Kygotchi = (function(animate) {
   */
   ky.toggleSleep = function() {
     ky.isSleeping = !ky.isSleeping;
-    $(bindings['toggleSleep']).html(ky.isSleeping ? 'Wake' : 'Sleep');
-    // animate.sleep(options.gotchi);
+    animate.toggleSleep(ky.isSleeping);
     debugStats();
   };
 
@@ -259,13 +269,15 @@ var Kygotchi = (function(animate) {
 
   /* update animations based on healthLevel*/
   ky.updateMeters = function() {
-    var health = ky.calcHealth();
-    if(health > 8) {
-      animate.emotion('happy');
-    } else if(health <= 5) {
-      animate.emotion('sad');
-    } else if(health > 5 && health <= 8) {
-      animate.emotion();
+    if(!ky.isSleeping) {
+      var health = ky.calcHealth();
+      if(health > 8) {
+        animate.emotion('happy');
+      } else if(health <= 5) {
+        animate.emotion('sad');
+      } else if(health > 5 && health <= 8) {
+        animate.emotion();
+      }
     }
   };
 
