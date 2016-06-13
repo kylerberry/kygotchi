@@ -15,10 +15,11 @@ var Kygotchi = (function(animate) {
 
   var bindings = {},
     maxThreshold = 15, //limit on health and other states
-    timeInterval = 1000, //time interval for timePasses()
+    timeInterval = 2000, //time interval for timePasses()
     timer = null,
     medicineCount = 2, //number of medicines available
-    mainEl = {};
+    mainEl = {},
+    fsm = {}; //state machine
 
   /*
   * initialize bindings and timer
@@ -31,45 +32,91 @@ var Kygotchi = (function(animate) {
       $(selector).on('click', ky[method]);
     });
 
+    //using none as 'to' to classify dynamic end state, handler decides
+    fsm = StateMachine.create({
+      error: function(e) {
+        console.log(e + ' cannot be called from "' + fsm.current + '" state');
+        return;
+      },
+      events: [
+        { name: '_normal_health', from: ['none', 'happy', 'sad'], to: 'neutral' },
+        { name: '_low_health', from: ['none', 'neutral'], to: 'sad' },
+        { name: '_high_health', from: ['none', 'neutral'], to: 'happy' },
+        { name: '_sleep', from: ['none', 'happy', 'neutral', 'sad'], to: 'sleep' },
+        { name: '_feed', from: ['sad', 'neutral', 'happy'], to: 'none' },
+        { name: '_wake', from: ['sleep'], to: 'none' },
+        { name: '_die', from: ['sad', 'sleep'], to: 'dead'}
+      ],
+      callbacks: {
+        on_normal_health: function() {
+          animate.to('neutral');
+        },
+        on_high_health: function() {
+          animate.to('happy');
+        },
+        on_low_health: function() {
+          animate.to('sad');
+        },
+        on_sleep: function() {
+          animate.to('sleep');
+          debugStats();
+        },
+        on_wake: function() {
+          animate.to();
+          ky.update();
+          debugStats();
+          return false;
+        },
+        on_feed: function() {
+          animate.to('eating');
+          if(ky.foodLevel) {
+            ky.foodLevel++;
+          }
+          setTimeout(function() {
+            animate.to();
+            ky.update();
+            debugStats();
+            return false;
+          }, 1000);
+
+          return StateMachine.ASYNC;
+        },
+        on_die: function() {
+          animate.die();
+          clearInterval(timer);
+          localStorage.removeItem('gotchi');
+          unbindActions();
+        }
+      }
+    });
+
     timer = startTimer();
 
     mainEl = options.gotchi ? options.gotchi : mainEl; //save this state in the animator?
     animate.init(mainEl);
 
-    ky.updateMeters();
+    ky.update();
   };
 
   /*
-  * toggle the sleep state
+  * sleep
   */
-  ky.toggleSleep = function() {
-    ky.isSleeping = !ky.isSleeping;
-    animate.toggleSleep(ky.isSleeping);
-    debugStats();
+  ky.sleep = function() {
+    fsm._sleep();
   };
 
   /*
-  * Gotchi dies. Kill the timer and unbind actions
+  * wake
   */
-  ky.die = function() {
-    animate.die();
-    clearInterval(timer);
-    localStorage.removeItem('gotchi');
-    unbindActions();
+  ky.wake = function() {
+    fsm._wake();
   };
 
   /*
   * increase foodLevel action, bindable
   */
   ky.feed = function() {
-    if(!ky.isSleeping) {
-      if(ky.foodLevel < maxThreshold) {
-        ky.foodLevel++;
-      } else {
-        console.log('barf!');
-      }
-    }
-    debugStats();
+    fsm._feed();
   };
 
   /*
@@ -154,52 +201,46 @@ var Kygotchi = (function(animate) {
 
   /*
   * the game loop
+  * //@todo find out how to get these to be contained in their states.
+  * //states have their own update?
   */
   var timePasses = function() {
-
     if(ky.foodLevel) {
       ky.foodLevel--;
     }
 
-    if(!ky.isSleeping) { //awake
-      if(ky.restLevel) {
-        ky.restLevel--;
-      }
+    if(ky.happinessLevel) {
+      ky.happinessLevel--;
+    }
 
-      if(ky.happinessLevel) {
-        ky.happinessLevel--;
-      }
-
-    } else { //sleeping
+    if(fsm.is('sleep')) {
       if(ky.restLevel < maxThreshold) {
         ky.restLevel++;
       }
-
-      if(ky.happinessLevel) {
-        ky.happinessLevel--;
+    } else {
+      if(ky.restLevel) {
+        ky.restLevel--;
       }
     }
 
-    if(!ky.isAlive()) {
-      ky.die();
-    } else {
-      ky.updateMeters();
-      ky.save();
-    }
+    ky.update();
   };
 
   /* update animations based on healthLevel*/
-  ky.updateMeters = function() {
-    if(!ky.isSleeping) {
-      var health = ky.calcHealth();
-      if(health > 8) {
-        animate.emotion('happy');
-      } else if(health <= 5) {
-        animate.emotion('sad');
-      } else if(health > 5 && health <= 8) {
-        animate.emotion();
-      }
+  ky.update = function() {
+    var health = ky.calcHealth();
+    if(health > 8) {
+      fsm._high_health();
+    } else if(health > 5 && health <= 8) {
+      fsm._normal_health();
+    } else if(health <= 5 && health > 2) {
+      fsm._low_health();
+    } else {
+      fsm._die();
+      return;
     }
+
+    ky.save();
   };
 
   /*
@@ -222,19 +263,6 @@ var Kygotchi = (function(animate) {
       timePasses();
       debugStats();
     }, timeInterval);
-  };
-
-  /*
-  * get a descriptive hunger state
-  * perhaps use for animation or sprite state
-  */
-  var fatLevel = function() {
-    if(ky.foodLevel <= 5) {
-      return 'starving';
-    } else if(ky.foodLevel >= 11) {
-      return 'fat';
-    }
-    return 'fit';
   };
 
   /*

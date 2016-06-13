@@ -12,6 +12,11 @@
   50% { -webkit-filter: blur(1px); -webkit-transform: scale(.9); }
 }
 
+@keyframes eating {
+  0% { background-position: -111px -439px; }
+  50% { background-position: -223px -439px; }
+}
+
 body {
   font-family: sans-serif;
   font-size: 16px;
@@ -78,5 +83,11 @@ body {
 
   &.sleep {
     @extend .blink;
+  }
+
+  &.eating {
+    background-position: -111px -439px;
+    height: 161px;
+    animation: eating .2s steps(1, end) infinite;
   }
 }

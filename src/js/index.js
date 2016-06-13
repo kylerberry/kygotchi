@@ -5,7 +5,8 @@ $('document').ready(function() {
       'feed' : '#feed',
       'play' : '#play',
       'reset': '#reset',
-      'toggleSleep' : '#toggleSleep',
+      'sleep' : '#sleep',
+      'wake' : '#wake',
       'medicine' : '#medicine'
     }
   });
