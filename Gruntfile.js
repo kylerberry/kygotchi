@@ -5,7 +5,7 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON("package.json"),
     paths: {
       src: {
-        js: "src/**/*.js",
+        js: "src/**",
       },
       dest: {
         js: "public/js/built.js",
@@ -19,14 +19,20 @@ module.exports = function(grunt) {
             expand: true,
             cwd: "node_modules/jquery/dist",
             src: "jquery.slim.min.js",
-            dest: "public/js/vendor"
+            dest: "src/js/vendor"
           }
         ]
       }
     },
     concat: {
       dist: {
-        src: "<%= paths.src.js %>",
+        src: [
+          "<%= paths.src.js %>/jquery.slim.min.js",
+          "<%= paths.src.js %>/kygotchi.animation.js",
+          "<%= paths.src.js %>/kygotchi.state-machine.js",
+          "<%= paths.src.js %>/kygotchi.js",
+          "<%= paths.src.js %>/index.js"
+        ],
         dest: "<%= paths.dest.js %>",
       }
     },

@@ -1,4 +1,4 @@
-var Kygotchi = (function(animate) {
+var Kygotchi = (function(animate, sm) {
   // fetch states from LocalStorage
   var localSettings = localStorage.getItem('gotchi') ? JSON.parse(localStorage.getItem('gotchi')) : {};
 
@@ -11,15 +11,14 @@ var Kygotchi = (function(animate) {
     last_interaction: 'date'
   };
 
-  var ky = $.extend(ky, defaults, localSettings);
+  var ky = $.extend(ky, defaults, localSettings, sm);
 
   var bindings = {},
     maxThreshold = 15, //limit on health and other states
-    timeInterval = 2000, //time interval for timePasses()
+    timeInterval = 1000, //time interval for timePasses()
     timer = null,
     medicineCount = 2, //number of medicines available
-    mainEl = {},
-    fsm = {}; //state machine
+    mainEl = {}; //state machine
 
   /*
   * initialize bindings and timer
@@ -33,12 +32,7 @@ var Kygotchi = (function(animate) {
     });
 
     //using none as 'to' to classify dynamic end state, handler decides
-    fsm = StateMachine.create({
-      error: function(e) {
-        console.log(e + ' cannot be called from "' + fsm.current + '" state');
-        return;
-      },
-      events: [
+/*
         { name: '_normal_health', from: ['none', 'happy', 'sad'], to: 'neutral' },
         { name: '_low_health', from: ['none', 'neutral'], to: 'sad' },
         { name: '_high_health', from: ['none', 'neutral'], to: 'happy' },
@@ -46,17 +40,7 @@ var Kygotchi = (function(animate) {
         { name: '_feed', from: ['sad', 'neutral', 'happy'], to: 'none' },
         { name: '_wake', from: ['sleep'], to: 'none' },
         { name: '_die', from: ['sad', 'sleep'], to: 'dead'}
-      ],
-      callbacks: {
-        on_normal_health: function() {
-          animate.to('neutral');
-        },
-        on_high_health: function() {
-          animate.to('happy');
-        },
-        on_low_health: function() {
-          animate.to('sad');
-        },
+
         on_sleep: function() {
           animate.to('sleep');
           debugStats();
@@ -80,82 +64,113 @@ var Kygotchi = (function(animate) {
           }, 1000);
 
           return StateMachine.ASYNC;
-        },
-        on_die: function() {
-          animate.die();
-          clearInterval(timer);
-          localStorage.removeItem('gotchi');
-          unbindActions();
         }
       }
-    });
+    });*/
 
     timer = startTimer();
 
-    mainEl = options.gotchi ? options.gotchi : mainEl; //save this state in the animator?
+    mainEl = options.element ? options.element : mainEl; //save this state in the animator?
     animate.init(mainEl);
 
+    ky.pushState(getHealthState());
     ky.update();
   };
 
-  /*
-  * sleep
-  */
+  /* returns happy, neutral or sad */
+  var getHealthState = function() {
+    var health = ky.calcHealth();
+     if(health > 8) {
+      return 'happy';
+    } else if(health > 5 && health <= 8) {
+      return 'neutral';
+    } else if(health <= 5 && health > 2) {
+      return 'sad';
+    } else {
+      return 'dead';
+    }
+  };
+
+  ky.happy = function() {
+    console.log('my current state is ' + ky.getCurrentState());
+    decrementStats();
+    var nextState = getHealthState();
+    ky.pushState(nextState);
+    animate.to(nextState);
+  };
+
+  ky.neutral = function() {
+    console.log('my current state is ' + ky.getCurrentState());
+    decrementStats();
+    var nextState = getHealthState();
+    ky.pushState(nextState);
+    animate.to(nextState);
+  };
+
+  ky.sad = function() {
+    console.log('my current state is ' + ky.getCurrentState());
+    decrementStats();
+    var nextState = getHealthState();
+
+    if(nextState == 'dead') {
+      ky.pushState(nextState);
+      ky.update();
+    } else {
+      ky.pushState(nextState);
+      animate.to(nextState);
+    }
+  };
+
+  ky.dead = function() {
+    console.log('my current state is ' + ky.getCurrentState());
+    ky.pushState(getHealthState());
+    animate.die();
+    clearInterval(timer);
+    localStorage.removeItem('gotchi');
+    unbindActions();
+  };
+
+  ky.eat = function() {
+    console.log('my current state is ' + ky.getCurrentState());
+  };
+
   ky.sleep = function() {
-    fsm._sleep();
+    console.log('my current state is ' + ky.getCurrentState());
   };
 
-  /*
-  * wake
-  */
   ky.wake = function() {
-    fsm._wake();
+    console.log('my current state is ' + ky.getCurrentState());
   };
 
-  /*
-  * increase foodLevel action, bindable
-  */
-  ky.feed = function() {
-    fsm._feed();
-  };
-
-  /*
-  * increase happiness action, bindable
-  */
   ky.play = function() {
-    if(!ky.isSleeping) {
-      if(ky.happinessLevel < maxThreshold) {
-        ky.happinessLevel++;
-      }
-    } else { //sleeping
-      console.log('happy dreams');
+    console.log('my current state is ' + ky.getCurrentState());
+  };
+
+  /* Decrement Values */
+  var decrementStats = function(props) {
+    if(!Array.isArray(props)) {
+      props = ['food', 'happiness', 'rest'];
     }
-    debugStats();
+
+    props.forEach(function(prop) {
+      if(ky[prop + 'Level']) {
+        ky[prop + 'Level']--;
+      }
+    });
+
+    /*if(ky.foodLevel) {
+      ky.foodLevel--;
+    }
+    if(ky.happinessLevel) {
+      ky.happinessLevel--;
+    }
+    if(ky.restLevel) {
+      ky.restLevel--;
+    }*/
   };
 
   /*
-  * increase health action, bindable
-  * limited use*
-  */
-  ky.medicine = function() {
-    if(ky.calcHealth() < maxThreshold
-      && medicineCount
-      && !ky.isSleeping) {
-      if(ky.happinessLevel < maxThreshold) {
-        ky.happinessLevel++;
-      }
-
-      if(ky.restLevel < maxThreshold) {
-        ky.restLevel++;
-      }
-
-      medicineCount--;
-    }
-    debugStats();
-  };
-
-  /*
-  * for debugging: reset states for testing without reloading
+  * reset states without reloading
   */
   ky.reset = function() {
     ky = $.extend(ky, defaults);
@@ -163,6 +178,46 @@ var Kygotchi = (function(animate) {
     unbindActions();
     ky.init(bindings);
   };
+
+
+  ky.medicine = function() {
+
+  };
+
+  // /*
+  // * increase happiness action, bindable
+  // */
+  // ky.play = function() {
+  //   if(!ky.isSleeping) {
+  //     if(ky.happinessLevel < maxThreshold) {
+  //       ky.happinessLevel++;
+  //     }
+  //   } else { //sleeping
+  //     console.log('happy dreams');
+  //   }
+  //   debugStats();
+  // };
+
+
+  // * increase health action, bindable
+  // * limited use*
+
+  // ky.medicine = function() {
+  //   if(ky.calcHealth() < maxThreshold
+  //     && medicineCount
+  //     && !ky.isSleeping) {
+  //     if(ky.happinessLevel < maxThreshold) {
+  //       ky.happinessLevel++;
+  //     }
+
+  //     if(ky.restLevel < maxThreshold) {
+  //       ky.restLevel++;
+  //     }
+
+  //     medicineCount--;
+  //   }
+  //   debugStats();
+  // };
 
   /*
   * check that the gotchi is alive
@@ -200,50 +255,6 @@ var Kygotchi = (function(animate) {
   };
 
   /*
-  * the game loop
-  * //@todo find out how to get these to be contained in their states.
-  * //states have their own update?
-  */
-  var timePasses = function() {
-    if(ky.foodLevel) {
-      ky.foodLevel--;
-    }
-
-    if(ky.happinessLevel) {
-      ky.happinessLevel--;
-    }
-
-    if(fsm.is('sleep')) {
-      if(ky.restLevel < maxThreshold) {
-        ky.restLevel++;
-      }
-    } else {
-      if(ky.restLevel) {
-        ky.restLevel--;
-      }
-    }
-
-    ky.update();
-  };
-
-  /* update animations based on healthLevel*/
-  ky.update = function() {
-    var health = ky.calcHealth();
-    if(health > 8) {
-      fsm._high_health();
-    } else if(health > 5 && health <= 8) {
-      fsm._normal_health();
-    } else if(health <= 5 && health > 2) {
-      fsm._low_health();
-    } else {
-      fsm._die();
-      return;
-    }
-
-    ky.save();
-  };
-
-  /*
   * unbind the eventListeners
   */
   var unbindActions = function() {
@@ -260,7 +271,7 @@ var Kygotchi = (function(animate) {
   var startTimer = function() {
     debugStats();
     return setInterval(function() {
-      timePasses();
+      ky.update();
       debugStats();
     }, timeInterval);
   };
@@ -278,4 +289,4 @@ var Kygotchi = (function(animate) {
   };
 
   return ky;
-}(Animate || {}));
+}(Animate || {}, StateMachine || {}));
