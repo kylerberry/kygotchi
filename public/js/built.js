@@ -90,7 +90,7 @@ var StateMachine = (function() {
     };
 
     return this;
-}());
+}).call(null);
 var Kygotchi = (function(animate, sm) {
   // fetch states from LocalStorage
   var localSettings = localStorage.getItem('gotchi') ? JSON.parse(localStorage.getItem('gotchi')) : {};
@@ -172,8 +172,13 @@ var Kygotchi = (function(animate, sm) {
 
   /* returns happy, neutral or sad */
   var getHealthState = function() {
+    if(!ky.foodLevel) {
+      return 'dead';
+    }
+
     var health = ky.calcHealth();
-     if(health > 8) {
+
+    if(health > 8) {
       return 'happy';
     } else if(health > 5 && health <= 8) {
       return 'neutral';
@@ -185,7 +190,6 @@ var Kygotchi = (function(animate, sm) {
   };
 
   ky.happy = function() {
-    console.log('my current state is ' + ky.getCurrentState());
     decrementStats();
     var nextState = getHealthState();
     ky.pushState(nextState);
@@ -193,7 +197,6 @@ var Kygotchi = (function(animate, sm) {
   };
 
   ky.neutral = function() {
-    console.log('my current state is ' + ky.getCurrentState());
     decrementStats();
     var nextState = getHealthState();
     ky.pushState(nextState);
@@ -201,7 +204,6 @@ var Kygotchi = (function(animate, sm) {
   };
 
   ky.sad = function() {
-    console.log('my current state is ' + ky.getCurrentState());
     decrementStats();
     var nextState = getHealthState();
 
@@ -215,7 +217,6 @@ var Kygotchi = (function(animate, sm) {
   };
 
   ky.dead = function() {
-    console.log('my current state is ' + ky.getCurrentState());
     ky.pushState(getHealthState());
     animate.die();
     clearInterval(timer);
@@ -223,15 +224,25 @@ var Kygotchi = (function(animate, sm) {
     unbindActions();
   };
 
-  ky.eat = function() {
-    console.log('my current state is ' + ky.getCurrentState());
-  };
-
   ky.sleep = function() {
-    console.log('my current state is ' + ky.getCurrentState());
+    decrementStats(['happiness', 'food']);
+    ky.restLevel++;
+
+    if(getHealthState() == 'dead') {
+      ky.pushState('dead');
+      ky.update();
+      return;
+    }
+
+    ky.pushState('sleep');
+    animate.to('sleep');
   };
 
   ky.wake = function() {
+    console.log('my current state is ' + ky.getCurrentState());
+  };
+
+  ky.eat = function() {
     console.log('my current state is ' + ky.getCurrentState());
   };
 
@@ -241,7 +252,7 @@ var Kygotchi = (function(animate, sm) {
 
   /* Decrement Values */
   var decrementStats = function(props) {
-    if(!Array.isArray(props)) {
+    if(typeof props == 'undefined' || !props.length) {
       props = ['food', 'happiness', 'rest'];
     }
 
@@ -250,16 +261,6 @@ var Kygotchi = (function(animate, sm) {
         ky[prop + 'Level']--;
       }
     });
-
-    /*if(ky.foodLevel) {
-      ky.foodLevel--;
-    }
-    if(ky.happinessLevel) {
-      ky.happinessLevel--;
-    }
-    if(ky.restLevel) {
-      ky.restLevel--;
-    }*/
   };
 
   /*

@@ -26,4 +26,4 @@ var StateMachine = (function() {
     };
 
     return this;
-}());
+}).call(null);
