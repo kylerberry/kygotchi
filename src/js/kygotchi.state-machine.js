@@ -1,29 +1,38 @@
 var StateMachine = (function() {
-	var stack = [];
+	var stack = [],
+        StateMachine = {event: {}};
 
-	this.update = function() {
-        var currentStateFunction = this.getCurrentState();
-
-        if (currentStateFunction != null) {
-            this[currentStateFunction]();
-        }
-
-        console.log(stack);
+    //adds the event methods to the stateMachine
+    StateMachine.create = function(events) {
+        events.forEach(function(event) {
+            var key = Object.keys(event)[0];
+            StateMachine.event[Object.keys(event)[0]] = event[key];
+        });
     };
 
-    this.popState = function() {
+	StateMachine.update = function() {
+        var currentStateFunction = StateMachine.getCurrentState();
+
+        console.log(stack);
+
+        if (currentStateFunction != null) {
+            StateMachine.event[currentStateFunction]();
+        }
+    };
+
+    StateMachine.popState = function() {
     	return stack.pop();
     };
 
-    this.pushState = function(state) {
-        if (this.getCurrentState() != state) {
+    StateMachine.pushState = function(state) {
+        if (StateMachine.getCurrentState() != state) {
             stack.push(state);
         }
     };
 
-    this.getCurrentState = function() {
+    StateMachine.getCurrentState = function() {
         return stack.length > 0 ? stack[stack.length - 1] : null;
     };
 
-    return this;
-}).call(null);
+    return StateMachine;
+}());

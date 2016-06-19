@@ -6,8 +6,7 @@ $('document').ready(function() {
       'play' : '#play',
       'reset' : '#reset',
       'sleep' : '#sleep',
-      'wake' : '#wake',
-      'medicine' : '#medicine'
+      'wake' : '#wake'
     }
   });
 });

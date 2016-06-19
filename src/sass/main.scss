@@ -85,7 +85,7 @@ body {
     @extend .blink;
   }
 
-  &.eating {
+  &.eat {
     background-position: -111px -439px;
     height: 161px;
     animation: eating .2s steps(1, end) infinite;
