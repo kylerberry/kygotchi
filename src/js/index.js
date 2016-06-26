@@ -1,12 +1,12 @@
 $('document').ready(function() {
   Kygotchi.init({
-    'gotchi' : '#gotchi',
+    'element' : '#gotchi',
     'bindings' : {
-      'feed' : '#feed',
+      'eat' : '#feed',
       'play' : '#play',
-      'reset': '#reset',
-      'toggleSleep' : '#toggleSleep',
-      'medicine' : '#medicine'
+      'reset' : '#reset',
+      'sleep' : '#sleep',
+      'wake' : '#wake'
     }
   });
 });

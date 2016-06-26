@@ -1,4 +1,4 @@
-var Kygotchi = (function(animate) {
+var Kygotchi = (function(animate, StateMachine) {
   // fetch states from LocalStorage
   var localSettings = localStorage.getItem('gotchi') ? JSON.parse(localStorage.getItem('gotchi')) : {};
 
@@ -31,84 +31,153 @@ var Kygotchi = (function(animate) {
       $(selector).on('click', ky[method]);
     });
 
+    StateMachine.create({
+      events : [
+        {'happy' : ky.happy},
+        {'neutral' : ky.neutral},
+        {'sad' : ky.sad},
+        {'dead' : ky.dead},
+        {'sleep' : ky.sleep},
+        {'wake' : ky.wake},
+        {'eat' : ky.eat},
+        {'play' : ky.play}
+      ],
+      onUpdate : function() {
+        if(ky.isAlive()) {
+          ky.save();
+        }
+      }
+    });
+
     timer = startTimer();
 
-    mainEl = options.gotchi ? options.gotchi : mainEl; //save this state in the animator?
+    mainEl = options.element ? options.element : mainEl; //save this in the animator?
     animate.init(mainEl);
-
-    ky.updateMeters();
+    applyHealthState();
   };
 
-  /*
-  * toggle the sleep state
-  */
-  ky.toggleSleep = function() {
-    ky.isSleeping = !ky.isSleeping;
-    animate.toggleSleep(ky.isSleeping);
-    debugStats();
+  /* applies the next health state and animations */
+  var applyHealthState = function() {
+    var healthState = getHealthState();
+    if(healthState == 'dead') {
+      ky.dead();
+      return;
+    }
+
+    StateMachine.pushState(healthState);
+    animate.to(healthState);
   };
 
-  /*
-  * Gotchi dies. Kill the timer and unbind actions
-  */
-  ky.die = function() {
+  /* returns happy, neutral, sad or dead based on health */
+  var getHealthState = function() {
+    if(!ky.foodLevel) {
+      return 'dead';
+    }
+
+    var health = ky.calcHealth();
+
+    if(health > 8) {
+      return 'happy';
+    } else if(health > 5 && health <= 8) {
+      return 'neutral';
+    } else if(health <= 5 && health > 2) {
+      return 'sad';
+    } else {
+      return 'dead';
+    }
+  };
+
+  /* Decrement Values */
+  var decrementStats = function(props) {
+    if(typeof props == 'undefined' || !props.length) {
+      props = ['food', 'happiness', 'rest'];
+    }
+
+    props.forEach(function(prop) {
+      if(ky[prop + 'Level']) {
+        ky[prop + 'Level']--;
+      }
+    });
+  };
+
+  /* health application wrapper. logic same for all health states */
+  var handleHealth = function() {
+    if(StateMachine.getCurrentState() == 'eat') {
+      var popped = StateMachine.pop();
+    }
+
+    decrementStats();
+    applyHealthState();
+
+    if(popped) {
+      StateMachine.pushState(popped);
+    }
+  };
+
+  ky.happy = function() {
+    handleHealth();
+  };
+
+  ky.neutral = function() {
+    handleHealth();
+  };
+
+  ky.sad = function() {
+    handleHealth();
+  };
+
+  ky.dead = function() {
+    StateMachine.pushState(getHealthState());
     animate.die();
     clearInterval(timer);
     localStorage.removeItem('gotchi');
     unbindActions();
   };
 
-  /*
-  * increase foodLevel action, bindable
-  */
-  ky.feed = function() {
-    if(!ky.isSleeping) {
-      if(ky.foodLevel < maxThreshold) {
-        ky.foodLevel++;
-      } else {
-        console.log('barf!');
-      }
+  ky.sleep = function() {
+    decrementStats(['happiness', 'food']);
+    if(ky.restLevel < maxThreshold
+      && StateMachine.getCurrentState() !== 'eat'
+      && StateMachine.getCurrentState() !== 'sleep') {
+      ky.restLevel++;
+      StateMachine.pushState('sleep');
+      animate.to('sleep');
     }
-    debugStats();
+
+    if(getHealthState() == 'dead') {
+      ky.dead();
+      return;
+    }
   };
 
-  /*
-  * increase happiness action, bindable
-  */
+  ky.wake = function() {
+    applyHealthState();
+  };
+
+  ky.eat = function() {
+    var currState = StateMachine.getCurrentState();
+
+    if(ky.foodLevel < maxThreshold
+      && currState !== 'eat'
+      && currState !== 'sleep')
+      {
+      ky.foodLevel++;
+      StateMachine.pushState('eat');
+      animate.to('eat');
+
+      var eatingTO = setTimeout(function() {
+        StateMachine.popState();
+        clearTimeout(eatingTO);
+      }, 500);
+    }
+  };
+
   ky.play = function() {
-    if(!ky.isSleeping) {
-      if(ky.happinessLevel < maxThreshold) {
-        ky.happinessLevel++;
-      }
-    } else { //sleeping
-      console.log('happy dreams');
-    }
-    debugStats();
+    console.log('my current state is ' + StateMachine.getCurrentState());
   };
 
   /*
-  * increase health action, bindable
-  * limited use*
-  */
-  ky.medicine = function() {
-    if(ky.calcHealth() < maxThreshold
-      && medicineCount
-      && !ky.isSleeping) {
-      if(ky.happinessLevel < maxThreshold) {
-        ky.happinessLevel++;
-      }
-
-      if(ky.restLevel < maxThreshold) {
-        ky.restLevel++;
-      }
-
-      medicineCount--;
-    }
-    debugStats();
-  };
-
-  /*
-  * for debugging: reset states for testing without reloading
+  * reset states without reloading
   */
   ky.reset = function() {
     ky = $.extend(ky, defaults);
@@ -116,6 +185,46 @@ var Kygotchi = (function(animate) {
     unbindActions();
     ky.init(bindings);
   };
+
+
+  ky.medicine = function() {
+
+  };
+
+  // /*
+  // * increase happiness action, bindable
+  // */
+  // ky.play = function() {
+  //   if(!ky.isSleeping) {
+  //     if(ky.happinessLevel < maxThreshold) {
+  //       ky.happinessLevel++;
+  //     }
+  //   } else { //sleeping
+  //     console.log('happy dreams');
+  //   }
+  //   debugStats();
+  // };
+
+
+  // * increase health action, bindable
+  // * limited use*
+
+  // ky.medicine = function() {
+  //   if(ky.calcHealth() < maxThreshold
+  //     && medicineCount
+  //     && !ky.isSleeping) {
+  //     if(ky.happinessLevel < maxThreshold) {
+  //       ky.happinessLevel++;
+  //     }
+
+  //     if(ky.restLevel < maxThreshold) {
+  //       ky.restLevel++;
+  //     }
+
+  //     medicineCount--;
+  //   }
+  //   debugStats();
+  // };
 
   /*
   * check that the gotchi is alive
@@ -153,56 +262,6 @@ var Kygotchi = (function(animate) {
   };
 
   /*
-  * the game loop
-  */
-  var timePasses = function() {
-
-    if(ky.foodLevel) {
-      ky.foodLevel--;
-    }
-
-    if(!ky.isSleeping) { //awake
-      if(ky.restLevel) {
-        ky.restLevel--;
-      }
-
-      if(ky.happinessLevel) {
-        ky.happinessLevel--;
-      }
-
-    } else { //sleeping
-      if(ky.restLevel < maxThreshold) {
-        ky.restLevel++;
-      }
-
-      if(ky.happinessLevel) {
-        ky.happinessLevel--;
-      }
-    }
-
-    if(!ky.isAlive()) {
-      ky.die();
-    } else {
-      ky.updateMeters();
-      ky.save();
-    }
-  };
-
-  /* update animations based on healthLevel*/
-  ky.updateMeters = function() {
-    if(!ky.isSleeping) {
-      var health = ky.calcHealth();
-      if(health > 8) {
-        animate.emotion('happy');
-      } else if(health <= 5) {
-        animate.emotion('sad');
-      } else if(health > 5 && health <= 8) {
-        animate.emotion();
-      }
-    }
-  };
-
-  /*
   * unbind the eventListeners
   */
   var unbindActions = function() {
@@ -219,22 +278,11 @@ var Kygotchi = (function(animate) {
   var startTimer = function() {
     debugStats();
     return setInterval(function() {
-      timePasses();
+      //@todo make this called by the state and not the world timer.
+      StateMachine.update();
+
       debugStats();
     }, timeInterval);
-  };
-
-  /*
-  * get a descriptive hunger state
-  * perhaps use for animation or sprite state
-  */
-  var fatLevel = function() {
-    if(ky.foodLevel <= 5) {
-      return 'starving';
-    } else if(ky.foodLevel >= 11) {
-      return 'fat';
-    }
-    return 'fit';
   };
 
   /*
@@ -250,4 +298,4 @@ var Kygotchi = (function(animate) {
   };
 
   return ky;
-}(Animate || {}));
+}(Animate || {}, StateMachine || {}));

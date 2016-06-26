@@ -34,7 +34,7 @@ var Animate = (function() {
     }, 200);
   };
 
-  this.emotion = function(state) {
+  this.to = function(state) {
     if(!state && state !== prevState) {
       selector.removeClass();
     }
@@ -47,14 +47,6 @@ var Animate = (function() {
     }
 
     var prevState = state;
-  };
-
-  this.toggleSleep = function(isSleeping) {
-    selector.removeClass();
-
-    if(isSleeping) {
-      selector.addClass('sleep');
-    }
   };
 
   this.die = function() {
