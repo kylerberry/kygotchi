@@ -64,36 +64,49 @@ var Animate = (function() {
 })();
 var StateMachine = (function() {
 	var stack = [],
-        StateMachine = {event: {}};
+        StateMachine = {event: {}},
+        onUpdateCallback = null;
 
-    //adds the event methods to the stateMachine
-    StateMachine.create = function(events) {
+    //adds the event methods to the stateMachine and applies other options
+    StateMachine.create = function(options) {
+        var events = options.events;
+
         events.forEach(function(event) {
             var key = Object.keys(event)[0];
             StateMachine.event[Object.keys(event)[0]] = event[key];
         });
+
+        if(typeof options.onUpdate == 'function') {
+            onUpdateCallback = options.onUpdate;
+        }
     };
 
+    //happens in a loop. updates the state based on event
 	StateMachine.update = function() {
         var currentStateFunction = StateMachine.getCurrentState();
-
-        console.log(stack);
 
         if (currentStateFunction != null) {
             StateMachine.event[currentStateFunction]();
         }
+
+        if(typeof onUpdateCallback == 'function') {
+            onUpdateCallback();
+        }
     };
 
+    //pops state off the top of the stack
     StateMachine.popState = function() {
     	return stack.pop();
     };
 
+    //adds state to top of stack
     StateMachine.pushState = function(state) {
         if (StateMachine.getCurrentState() != state) {
             stack.push(state);
         }
     };
 
+    //returns the state at the pop of the stack
     StateMachine.getCurrentState = function() {
         return stack.length > 0 ? stack[stack.length - 1] : null;
     };
@@ -133,28 +146,32 @@ var Kygotchi = (function(animate, StateMachine) {
       $(selector).on('click', ky[method]);
     });
 
-    StateMachine.create([
-      {'happy' : ky.happy},
-      {'neutral' : ky.neutral},
-      {'sad' : ky.sad},
-      {'dead' : ky.dead},
-      {'sleep' : ky.sleep},
-      {'wake' : ky.wake},
-      {'eat' : ky.eat},
-      {'play' : ky.play}
-    ]);
-
-    console.log(StateMachine);
-    console.log(ky);
+    StateMachine.create({
+      events : [
+        {'happy' : ky.happy},
+        {'neutral' : ky.neutral},
+        {'sad' : ky.sad},
+        {'dead' : ky.dead},
+        {'sleep' : ky.sleep},
+        {'wake' : ky.wake},
+        {'eat' : ky.eat},
+        {'play' : ky.play}
+      ],
+      onUpdate : function() {
+        if(ky.isAlive()) {
+          ky.save();
+        }
+      }
+    });
 
     timer = startTimer();
 
-    mainEl = options.element ? options.element : mainEl; //save this state in the animator?
+    mainEl = options.element ? options.element : mainEl; //save this in the animator?
     animate.init(mainEl);
     applyHealthState();
   };
 
-  /* applies the next health state */
+  /* applies the next health state and animations */
   var applyHealthState = function() {
     var healthState = getHealthState();
     if(healthState == 'dead') {
@@ -166,7 +183,7 @@ var Kygotchi = (function(animate, StateMachine) {
     animate.to(healthState);
   };
 
-  /* returns happy, neutral, sad or dead */
+  /* returns happy, neutral, sad or dead based on health */
   var getHealthState = function() {
     if(!ky.foodLevel) {
       return 'dead';
@@ -198,19 +215,30 @@ var Kygotchi = (function(animate, StateMachine) {
     });
   };
 
-  ky.happy = function() {
+  /* health application wrapper. logic same for all health states */
+  var handleHealth = function() {
+    if(StateMachine.getCurrentState() == 'eat') {
+      var popped = StateMachine.pop();
+    }
+
     decrementStats();
     applyHealthState();
+
+    if(popped) {
+      StateMachine.pushState(popped);
+    }
+  };
+
+  ky.happy = function() {
+    handleHealth();
   };
 
   ky.neutral = function() {
-    decrementStats();
-    applyHealthState();
+    handleHealth();
   };
 
   ky.sad = function() {
-    decrementStats();
-    applyHealthState();
+    handleHealth();
   };
 
   ky.dead = function() {
@@ -223,12 +251,13 @@ var Kygotchi = (function(animate, StateMachine) {
 
   ky.sleep = function() {
     decrementStats(['happiness', 'food']);
-    if(ky.restLevel < maxThreshold) {
+    if(ky.restLevel < maxThreshold
+      && StateMachine.getCurrentState() !== 'eat'
+      && StateMachine.getCurrentState() !== 'sleep') {
       ky.restLevel++;
+      StateMachine.pushState('sleep');
+      animate.to('sleep');
     }
-
-    StateMachine.pushState('sleep');
-    animate.to('sleep');
 
     if(getHealthState() == 'dead') {
       ky.dead();
@@ -254,7 +283,7 @@ var Kygotchi = (function(animate, StateMachine) {
       var eatingTO = setTimeout(function() {
         StateMachine.popState();
         clearTimeout(eatingTO);
-      }, 1000);
+      }, 500);
     }
   };
 
@@ -364,7 +393,9 @@ var Kygotchi = (function(animate, StateMachine) {
   var startTimer = function() {
     debugStats();
     return setInterval(function() {
+      //@todo make this called by the state and not the world timer.
       StateMachine.update();
+
       debugStats();
     }, timeInterval);
   };
