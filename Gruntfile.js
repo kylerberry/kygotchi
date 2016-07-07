@@ -20,6 +20,12 @@ module.exports = function(grunt) {
             cwd: "node_modules/jquery/dist",
             src: "jquery.slim.min.js",
             dest: "src/js/vendor"
+          },
+          {
+            expand: true,
+            cwd: "node_modules/dragula/dist",
+            src: "dragula.js",
+            dest: "src/js/vendor"
           }
         ]
       }
@@ -28,6 +34,7 @@ module.exports = function(grunt) {
       dist: {
         src: [
           "<%= paths.src.js %>/jquery.slim.min.js",
+          "<%= paths.src.js %>/dragula.js",
           "<%= paths.src.js %>/kygotchi.animation.js",
           "<%= paths.src.js %>/kygotchi.state-machine.js",
           "<%= paths.src.js %>/kygotchi.js",
@@ -62,7 +69,8 @@ module.exports = function(grunt) {
       options: {
           outputStyle: 'compressed',
           includePaths: [
-            './node_modules/normalize-scss/sass/'
+            './node_modules/normalize-scss/sass/',
+            './node_modules/dragula/dist/'
           ]
       },
       dist: {

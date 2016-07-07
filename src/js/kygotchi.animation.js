@@ -1,6 +1,3 @@
-// @todo implement a finite state machine
-// http://gameprogrammingpatterns.com/state.html
-
 var Animate = (function() {
 
   var selector = '',

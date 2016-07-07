@@ -40,7 +40,8 @@ var Kygotchi = (function(animate, StateMachine) {
         {'sleep' : ky.sleep},
         {'wake' : ky.wake},
         {'eat' : ky.eat},
-        {'play' : ky.play}
+        {'play' : ky.play},
+        {'dragFood' : ky.dragFood}
       ],
       onUpdate : function() {
         if(ky.isAlive()) {
@@ -48,6 +49,29 @@ var Kygotchi = (function(animate, StateMachine) {
         }
       }
     });
+
+    /*BEGIN Drag & Drop*/
+    var drake = dragula([
+        $('#drop-target')[0],
+        $('#controls')[0]
+      ], {
+        revertOnSpill: true,
+        copy: true
+    });
+
+    drake.on('drop', function(el, target, src) {
+      $(target).empty();
+      if(ky.isAlive()) {
+        ky.eat();
+      }
+    });
+
+    drake.on('drag', function(el, src) {
+      if(ky.isAlive()) {
+        ky.dragFood();
+      }
+    });
+    /*END Drag & Drop*/
 
     timer = startTimer();
 
@@ -166,10 +190,15 @@ var Kygotchi = (function(animate, StateMachine) {
       animate.to('eat');
 
       var eatingTO = setTimeout(function() {
-        StateMachine.popState();
+        StateMachine.pushState(getHealthState());
         clearTimeout(eatingTO);
       }, 500);
     }
+  };
+
+  ky.dragFood = function() {
+    StateMachine.pushState('dragFood');
+    animate.to('drag-food');
   };
 
   ky.play = function() {
