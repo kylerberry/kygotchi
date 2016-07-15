@@ -47,8 +47,12 @@ body {
   animation: hover 1s linear infinite;
 }
 
-#gotchi {
+.sprite {
   background: url('../img/faces.svg') 0 0 no-repeat;
+}
+
+#gotchi {
+  @extend .sprite;
   display: block;
   width: 112px;
   height: 144px;
@@ -92,16 +96,31 @@ body {
     animation: eating .2s steps(1, end) infinite;
   }
 
-  &.drag-food {
+  &.medicine {
+    background-position: -230px -146px;
+    height: 147px;
+  }
+
+  &.drag-food,
+  &.drag-medicine {
     background-position: 0px -439px;
     height: 159px;
   }
 }
 
 .food.draggable {
-  width: 50px;
-  height: 50px;
-  background: red;
+  @extend .sprite;
+  background-position: -224px 0px;
+  width: 80px;
+  height: 44px;
+}
+
+.medicine.draggable {
+  @extend .sprite;
+  background-position: -307px -39px;
+  width: 32px;
+  height: 104px;
+
 }
 
 #drop-target {

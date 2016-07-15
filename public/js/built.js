@@ -1062,7 +1062,9 @@ var Kygotchi = (function(animate, StateMachine) {
         {'wake' : ky.wake},
         {'eat' : ky.eat},
         {'play' : ky.play},
-        {'dragFood' : ky.dragFood}
+        {'dragFood' : ky.dragFood},
+        {'medicine' : ky.medicine},
+        {'dragMedicine' : ky.dragMedicine}
       ],
       onUpdate : function() {
         if(ky.isAlive()) {
@@ -1080,16 +1082,36 @@ var Kygotchi = (function(animate, StateMachine) {
         copy: true
     });
 
+    //drop draggable
     drake.on('drop', function(el, target, src) {
       $(target).empty();
       if(ky.isAlive()) {
-        ky.eat();
+        if($(el).hasClass('food')) {
+          ky.eat();
+        }
+        if($(el).hasClass('medicine')) {
+          ky.medicine();
+        }
       }
     });
 
+    //dragging item
     drake.on('drag', function(el, src) {
       if(ky.isAlive()) {
-        ky.dragFood();
+        if($(el).hasClass('food')) {
+          ky.dragFood();
+        }
+        if($(el).hasClass('medicine')) {
+          ky.dragMedicine();
+        }
+      }
+    });
+
+    //if draggables spill
+    drake.on('cancel', function(el, container, src) {
+      if(ky.isAlive()) {
+        StateMachine.popState();
+        animate.to(StateMachine.getCurrentState());
       }
     });
     /*END Drag & Drop*/
@@ -1226,6 +1248,34 @@ var Kygotchi = (function(animate, StateMachine) {
     console.log('my current state is ' + StateMachine.getCurrentState());
   };
 
+  ky.dragMedicine = function() {
+    StateMachine.pushState('dragMedicine');
+    animate.to('drag-medicine');
+  };
+
+  ky.medicine = function() {
+    var currState = StateMachine.getCurrentState();
+    if(medicineCount
+      && currState !== 'sleep'
+      && currState !== 'medicine')
+      {
+      StateMachine.pushState('medicine');
+      animate.to('medicine');
+      ky.happinessLevel += ky.happinessLevel < maxThreshold ? 2 : 0;
+      ky.restLevel += ky.restLevel < maxThreshold ? 2 : 0;
+      medicineCount--;
+
+      var medsTO = setTimeout(function() {
+        StateMachine.pushState(getHealthState());
+        clearTimeout(medsTO);
+      }, 500);
+    }
+
+    if(!medicineCount) {
+      //remove draggable for medicine
+    }
+  };
+
   /*
   * reset states without reloading
   */
@@ -1234,11 +1284,6 @@ var Kygotchi = (function(animate, StateMachine) {
     clearInterval(timer);
     unbindActions();
     ky.init(bindings);
-  };
-
-
-  ky.medicine = function() {
-
   };
 
   // /*
@@ -1354,7 +1399,6 @@ $('document').ready(function() {
   Kygotchi.init({
     'element' : '#gotchi',
     'bindings' : {
-      'eat' : '#feed',
       'play' : '#play',
       'reset' : '#reset',
       'sleep' : '#sleep',
