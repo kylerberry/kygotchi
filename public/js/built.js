@@ -931,11 +931,7 @@ var Animate = (function() {
     }
 
     //blink
-    blinkTimer = setInterval(function(){
-      if(Math.floor(Math.random() * 10) % 4 == 0) {
-        this.blink();
-      }
-    }, 1000);
+    blinkTimer = setInterval(this.blink, 2000);
   };
 
   this.blink = function() {
@@ -1082,19 +1078,6 @@ var Kygotchi = (function(animate, StateMachine) {
         copy: true
     });
 
-    //drop draggable
-    drake.on('drop', function(el, target, src) {
-      $(target).empty();
-      if(ky.isAlive()) {
-        if($(el).hasClass('food')) {
-          ky.eat();
-        }
-        if($(el).hasClass('medicine')) {
-          ky.medicine();
-        }
-      }
-    });
-
     //dragging item
     drake.on('drag', function(el, src) {
       if(ky.isAlive()) {
@@ -1103,6 +1086,19 @@ var Kygotchi = (function(animate, StateMachine) {
         }
         if($(el).hasClass('medicine')) {
           ky.dragMedicine();
+        }
+      }
+    });
+
+    //drop draggable
+    drake.on('drop', function(el, target, src) {
+      $(target).empty();
+      if(ky.isAlive()) {
+        if($(el).hasClass('food')) {
+          ky.eat();
+        }
+        if($(el).hasClass('medicine')) {
+          ky.medicine($(src).find('.medicine'));
         }
       }
     });
@@ -1212,7 +1208,7 @@ var Kygotchi = (function(animate, StateMachine) {
     }
 
     if(getHealthState() == 'dead') {
-      ky.dead();
+      StateMachine.pushState('dead');
       return;
     }
   };
@@ -1253,7 +1249,7 @@ var Kygotchi = (function(animate, StateMachine) {
     animate.to('drag-medicine');
   };
 
-  ky.medicine = function() {
+  ky.medicine = function(el) {
     var currState = StateMachine.getCurrentState();
     if(medicineCount
       && currState !== 'sleep'
@@ -1269,10 +1265,10 @@ var Kygotchi = (function(animate, StateMachine) {
         StateMachine.pushState(getHealthState());
         clearTimeout(medsTO);
       }, 500);
-    }
 
-    if(!medicineCount) {
-      //remove draggable for medicine
+      if(!medicineCount) {
+        $(el).remove();
+      }
     }
   };
 
@@ -1296,27 +1292,6 @@ var Kygotchi = (function(animate, StateMachine) {
   //     }
   //   } else { //sleeping
   //     console.log('happy dreams');
-  //   }
-  //   debugStats();
-  // };
-
-
-  // * increase health action, bindable
-  // * limited use*
-
-  // ky.medicine = function() {
-  //   if(ky.calcHealth() < maxThreshold
-  //     && medicineCount
-  //     && !ky.isSleeping) {
-  //     if(ky.happinessLevel < maxThreshold) {
-  //       ky.happinessLevel++;
-  //     }
-
-  //     if(ky.restLevel < maxThreshold) {
-  //       ky.restLevel++;
-  //     }
-
-  //     medicineCount--;
   //   }
   //   debugStats();
   // };
