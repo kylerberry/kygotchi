@@ -173,7 +173,7 @@ var Kygotchi = (function(animate, StateMachine) {
   };
 
   ky.dead = function() {
-    StateMachine.pushState(getHealthState());
+    StateMachine.pushState('dead');
     animate.die();
     clearInterval(timer);
     localStorage.removeItem('gotchi');
@@ -191,7 +191,7 @@ var Kygotchi = (function(animate, StateMachine) {
     }
 
     if(getHealthState() == 'dead') {
-      StateMachine.pushState('dead');
+      ky.dead();
       return;
     }
   };
