@@ -40,7 +40,10 @@ var Kygotchi = (function(animate, StateMachine) {
         {'sleep' : ky.sleep},
         {'wake' : ky.wake},
         {'eat' : ky.eat},
-        {'play' : ky.play}
+        {'play' : ky.play},
+        {'dragFood' : ky.dragFood},
+        {'medicine' : ky.medicine},
+        {'dragMedicine' : ky.dragMedicine}
       ],
       onUpdate : function() {
         if(ky.isAlive()) {
@@ -48,6 +51,49 @@ var Kygotchi = (function(animate, StateMachine) {
         }
       }
     });
+
+    /*BEGIN Drag & Drop*/
+    var drake = dragula([
+        $('#drop-target')[0],
+        $('#controls')[0]
+      ], {
+        revertOnSpill: true,
+        copy: true
+    });
+
+    //dragging item
+    drake.on('drag', function(el, src) {
+      if(ky.isAlive()) {
+        if($(el).hasClass('food')) {
+          ky.dragFood();
+        }
+        if($(el).hasClass('medicine')) {
+          ky.dragMedicine();
+        }
+      }
+    });
+
+    //drop draggable
+    drake.on('drop', function(el, target, src) {
+      $(target).empty();
+      if(ky.isAlive()) {
+        if($(el).hasClass('food')) {
+          ky.eat();
+        }
+        if($(el).hasClass('medicine')) {
+          ky.medicine($(src).find('.medicine'));
+        }
+      }
+    });
+
+    //if draggables spill
+    drake.on('cancel', function(el, container, src) {
+      if(ky.isAlive()) {
+        StateMachine.popState();
+        animate.to(StateMachine.getCurrentState());
+      }
+    });
+    /*END Drag & Drop*/
 
     timer = startTimer();
 
@@ -127,7 +173,7 @@ var Kygotchi = (function(animate, StateMachine) {
   };
 
   ky.dead = function() {
-    StateMachine.pushState(getHealthState());
+    StateMachine.pushState('dead');
     animate.die();
     clearInterval(timer);
     localStorage.removeItem('gotchi');
@@ -166,14 +212,47 @@ var Kygotchi = (function(animate, StateMachine) {
       animate.to('eat');
 
       var eatingTO = setTimeout(function() {
-        StateMachine.popState();
+        StateMachine.pushState(getHealthState());
         clearTimeout(eatingTO);
       }, 500);
     }
   };
 
+  ky.dragFood = function() {
+    StateMachine.pushState('dragFood');
+    animate.to('drag-food');
+  };
+
   ky.play = function() {
     console.log('my current state is ' + StateMachine.getCurrentState());
+  };
+
+  ky.dragMedicine = function() {
+    StateMachine.pushState('dragMedicine');
+    animate.to('drag-medicine');
+  };
+
+  ky.medicine = function(el) {
+    var currState = StateMachine.getCurrentState();
+    if(medicineCount
+      && currState !== 'sleep'
+      && currState !== 'medicine')
+      {
+      StateMachine.pushState('medicine');
+      animate.to('medicine');
+      ky.happinessLevel += ky.happinessLevel < maxThreshold ? 2 : 0;
+      ky.restLevel += ky.restLevel < maxThreshold ? 2 : 0;
+      medicineCount--;
+
+      var medsTO = setTimeout(function() {
+        StateMachine.pushState(getHealthState());
+        clearTimeout(medsTO);
+      }, 500);
+
+      if(!medicineCount) {
+        $(el).remove();
+      }
+    }
   };
 
   /*
@@ -186,11 +265,6 @@ var Kygotchi = (function(animate, StateMachine) {
     ky.init(bindings);
   };
 
-
-  ky.medicine = function() {
-
-  };
-
   // /*
   // * increase happiness action, bindable
   // */
@@ -201,27 +275,6 @@ var Kygotchi = (function(animate, StateMachine) {
   //     }
   //   } else { //sleeping
   //     console.log('happy dreams');
-  //   }
-  //   debugStats();
-  // };
-
-
-  // * increase health action, bindable
-  // * limited use*
-
-  // ky.medicine = function() {
-  //   if(ky.calcHealth() < maxThreshold
-  //     && medicineCount
-  //     && !ky.isSleeping) {
-  //     if(ky.happinessLevel < maxThreshold) {
-  //       ky.happinessLevel++;
-  //     }
-
-  //     if(ky.restLevel < maxThreshold) {
-  //       ky.restLevel++;
-  //     }
-
-  //     medicineCount--;
   //   }
   //   debugStats();
   // };

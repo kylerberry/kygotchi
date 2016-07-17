@@ -1,6 +1,3 @@
-// @todo implement a finite state machine
-// http://gameprogrammingpatterns.com/state.html
-
 var Animate = (function() {
 
   var selector = '',
@@ -20,11 +17,7 @@ var Animate = (function() {
     }
 
     //blink
-    blinkTimer = setInterval(function(){
-      if(Math.floor(Math.random() * 10) % 4 == 0) {
-        this.blink();
-      }
-    }, 1000);
+    blinkTimer = setInterval(this.blink, 2000);
   };
 
   this.blink = function() {
