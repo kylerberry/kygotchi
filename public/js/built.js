@@ -1094,14 +1094,13 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
 
         switch(state) {
           case 'sleep':
-            removeStat('rest');
+            removeStat(['rest']);
           break;
           case 'dragFood':
-            removeStat('food');
+            removeStat(['food']);
           break;
           case 'dragMedicine':
-            removeStat('rest');
-            removeStat('happiness');
+            removeStat(['rest', 'happiness']);
           break;
         }
       }
@@ -1204,9 +1203,11 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
   */
 
   /* remove a stat to be decreased */
-  var removeStat = function(stat) {
-    if(decStats.indexOf(stat) !== -1) {
-      decStats.splice(decStats.indexOf(stat), 1);
+  var removeStat = function(stats) {
+    for(var i = 0; i < stats.length; i++) {
+      if(decStats.indexOf(stats[i]) !== -1) {
+        decStats.splice(decStats.indexOf(stats[i]), 1);
+      }
     }
   };
 
@@ -1220,7 +1221,6 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
 
   /* Decrement Stats */
   var decrementStats = function() {
-    console.log(decStats);
     decStats.forEach(function(stat) {
       if(ky[stat + 'Level']) {
         ky[stat + 'Level']--;
@@ -1247,7 +1247,6 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
   };
 
   ky.dead = function() {
-    console.log('dead');
     StateMachine.pushState('dead'); //update state
     animate.die(); //death animate
     drake.destroy(); //kill drag listeners

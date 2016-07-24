@@ -181,8 +181,8 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
   /* remove a stat to be decreased */
   var removeStat = function(stats) {
     for(var i = 0; i < stats.length; i++) {
-      if(decStats.indexOf(stat) !== -1) {
-        decStats.splice(decStats.indexOf(stat), 1);
+      if(decStats.indexOf(stats[i]) !== -1) {
+        decStats.splice(decStats.indexOf(stats[i]), 1);
       }
     }
   };
