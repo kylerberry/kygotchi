@@ -1,7 +1,8 @@
 var StateMachine = (function() {
 	var stack = [],
         StateMachine = {event: {}},
-        onUpdateCallback = null;
+        onUpdateCallback = null,
+        onStateChangeCallback = null;
 
     //adds the event methods to the stateMachine and applies other options
     StateMachine.create = function(options) {
@@ -14,6 +15,9 @@ var StateMachine = (function() {
 
         if(typeof options.onUpdate == 'function') {
             onUpdateCallback = options.onUpdate;
+        }
+        if(typeof options.onStateChange == 'function') {
+            onStateChangeCallback = options.onStateChange;
         }
     };
 
@@ -39,6 +43,9 @@ var StateMachine = (function() {
     StateMachine.pushState = function(state) {
         if (StateMachine.getCurrentState() != state) {
             stack.push(state);
+            if(typeof onStateChangeCallback == 'function') {
+                onStateChangeCallback(state);
+            }
         }
     };
 
