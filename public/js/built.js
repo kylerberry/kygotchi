@@ -1106,6 +1106,8 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
       }
     });
 
+    console.log(drake);
+
     /*BEGIN Drag & Drop*/
     drake = dragula([
         $('#drop-target')[0],
@@ -1179,7 +1181,7 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
 
   /* returns happy, neutral, sad or dead based on health */
   var getHealthState = function() {
-    if(!ky.foodLevel) {
+    if(!ky.foodLevel || (!ky.restLevel && !ky.happinessLevel)) {
       return 'dead';
     }
 
@@ -1249,16 +1251,16 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
   ky.dead = function() {
     StateMachine.pushState('dead'); //update state
     animate.die(); //death animate
-    drake.destroy(); //kill dragula listeners
+    clearInterval(timer); // kill world clock
+    localStorage.removeItem('gotchi'); //reset localStorage props
+    unbindActions(); //unbind listeners
 
+    drake.destroy(); //kill dragula listeners
     /*fixes situation where dragula binds would not be destroyed if
     an item is dragged within milliseconds of a death state.
     remove the dragula instantiation*/
     drake = null;
 
-    clearInterval(timer); // kill world clock
-    localStorage.removeItem('gotchi'); //reset localStorage props
-    unbindActions(); //unbind listeners
   };
 
   ky.sleep = function() {
@@ -1268,7 +1270,7 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
       animate.to('sleep');
     }
 
-    if(getHealthState() == 'dead') {
+    if(!ky.isAlive()) {
       ky.dead();
       return;
     }
@@ -1350,6 +1352,13 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
     ky = $.extend(ky, defaults);
     clearInterval(timer);
     unbindActions();
+
+    if(drake) {
+      drake.destroy();
+      drake = null;
+    }
+
+    //@todo init is firing multiple times for every reset
     ky.init(bindings);
   };
 
@@ -1371,7 +1380,7 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
   * check that the gotchi is alive
   */
   ky.isAlive = function() {
-    return Boolean((ky.calcHealth() > 2) && ky.foodLevel);
+    return getHealthState() !== 'dead';
   };
 
   /*
