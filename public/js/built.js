@@ -1117,7 +1117,7 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
 
     //dragging item
     drake.on('drag', function(el, src) {
-      if(StateMachine.getCurrentState() == 'sleep' || getHealthState() == 'dead') {
+      if(StateMachine.getCurrentState() == 'sleep') {
         drake.cancel();
         return;
       }
@@ -1142,7 +1142,7 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
 
     //if draggables spill
     drake.on('cancel', function(el, container, src) {
-      if(StateMachine.getCurrentState() == 'sleep' || getHealthState() == 'dead') {
+      if(StateMachine.getCurrentState() == 'sleep') {
         return;
       }
 
@@ -1249,7 +1249,13 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
   ky.dead = function() {
     StateMachine.pushState('dead'); //update state
     animate.die(); //death animate
-    drake.destroy(); //kill drag listeners
+    drake.destroy(); //kill dragula listeners
+
+    /*fixes situation where dragula binds would not be destroyed if
+    an item is dragged within milliseconds of a death state.
+    remove the dragula instantiation*/
+    drake = null;
+
     clearInterval(timer); // kill world clock
     localStorage.removeItem('gotchi'); //reset localStorage props
     unbindActions(); //unbind listeners
