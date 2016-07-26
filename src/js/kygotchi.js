@@ -30,13 +30,10 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
     drake = null, //dragula instance
     decStats = ['happiness', 'rest', 'food']; //stat watchers
 
-  var initCnt = 0;
   /*
   * initialize bindings and timer
   */
   ky.init = function(options) {
-    initCnt++;
-    console.log(initCnt);
     //take in action bindings to bind/unbind in a clean way
     bindings = $.extend(bindings, options.bindings);
 
@@ -147,10 +144,6 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
   /* applies the next health state and animations */
   var applyHealthState = function() {
     var healthState = getHealthState();
-    if(healthState == 'dead') {
-      ky.dead();
-      return;
-    }
 
     StateMachine.pushState(healthState);
     animate.to(healthState);
@@ -208,9 +201,9 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
   };
 
   /*
-  * ============
+  * =============
   * EVENT METHODS
-  * ============
+  * =============
   */
 
   ky.happy = function() {
@@ -237,7 +230,6 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
     an item is dragged within milliseconds of a death state.
     remove the dragula instantiation*/
     drake = null;
-
   };
 
   ky.sleep = function() {
@@ -245,11 +237,6 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
       ky.restLevel++;
       StateMachine.pushState('sleep');
       animate.to('sleep');
-    }
-
-    if(!ky.isAlive()) {
-      ky.dead();
-      return;
     }
   };
 
@@ -260,10 +247,7 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
   ky.eat = function() {
     var currState = StateMachine.getCurrentState();
 
-    if(ky.foodLevel < maxThreshold
-      && currState !== 'eat'
-      && currState !== 'sleep')
-      {
+    if(ky.foodLevel < maxThreshold && currState !== 'eat') {
       ky.foodLevel++;
       StateMachine.pushState('eat');
       animate.to('eat');
@@ -277,10 +261,6 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
   };
 
   ky.dragFood = function() {
-    if(getHealthState() == 'dead') {
-      ky.dead();
-      return;
-    }
     StateMachine.pushState('dragFood');
     animate.to('drag-food');
   };
@@ -290,20 +270,13 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
   };
 
   ky.dragMedicine = function() {
-    if(getHealthState() == 'dead') {
-      ky.dead();
-      return;
-    }
     StateMachine.pushState('dragMedicine');
     animate.to('drag-medicine');
   };
 
   ky.medicine = function(el) {
     var currState = StateMachine.getCurrentState();
-    if(medicineCount
-      && currState !== 'sleep'
-      && currState !== 'medicine')
-      {
+    if(medicineCount && currState !== 'medicine') {
       StateMachine.pushState('medicine');
       animate.to('medicine');
       ky.happinessLevel += ky.happinessLevel < maxThreshold-1 ? 2 : 0;
