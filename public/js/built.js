@@ -1054,10 +1054,13 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
     drake = null, //dragula instance
     decStats = ['happiness', 'rest', 'food']; //stat watchers
 
+  var initCnt = 0;
   /*
   * initialize bindings and timer
   */
   ky.init = function(options) {
+    initCnt++;
+    console.log(initCnt);
     //take in action bindings to bind/unbind in a clean way
     bindings = $.extend(bindings, options.bindings);
 
@@ -1105,8 +1108,6 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
         }
       }
     });
-
-    console.log(drake);
 
     /*BEGIN Drag & Drop*/
     drake = dragula([
@@ -1351,30 +1352,15 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
   ky.reset = function() {
     ky = $.extend(ky, defaults);
     clearInterval(timer);
-    unbindActions();
+    unbindActions(true);
 
     if(drake) {
       drake.destroy();
       drake = null;
     }
 
-    //@todo init is firing multiple times for every reset
     ky.init(bindings);
   };
-
-  // /*
-  // * increase happiness action, bindable
-  // */
-  // ky.play = function() {
-  //   if(!ky.isSleeping) {
-  //     if(ky.happinessLevel < maxThreshold) {
-  //       ky.happinessLevel++;
-  //     }
-  //   } else { //sleeping
-  //     console.log('happy dreams');
-  //   }
-  //   debugStats();
-  // };
 
   /*
   * check that the gotchi is alive
@@ -1413,10 +1399,15 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
 
   /*
   * unbind the eventListeners
+  *
+  * @param includeReset Boolean | whether or not to unbind 'reset' listener
   */
-  var unbindActions = function() {
+  var unbindActions = function(includeReset) {
+    if(typeof includeReset == 'undefined') {
+      includeReset = false;
+    }
     $.each(bindings, function(key, selector) {
-      if(key !== 'reset') {
+      if(key !== 'reset' || includeReset) {
         $(selector).off();
       }
     });
