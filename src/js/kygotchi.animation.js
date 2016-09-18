@@ -1,14 +1,34 @@
 var Animate = (function() {
 
   var selector = '',
-    blinkTimer = null;
+    blinkTimer = null,
+    parent = '',
+    shadow = '',
+    reveal = '';
 
   this.init = function(slct) {
-    selector = $(slct);
+    if(!selector) {
+      selector = $(slct);
+      parent = selector.parent();
+      shadow = parent.next('.shadow');
+      reveal = $('.poof');
+    }
+
+    //gotchi entrance poof, kind of dirty
+    reveal.addClass('poof-in');
+    selector.css({'opacity' : 0});
+    setTimeout(function() {
+      selector.css({'opacity' : 1});
+    }, 350);
+    setTimeout(function() {
+      reveal.removeClass('poof-in');
+    }, 500);
 
     //remove dead look on restart
     if(selector.hasClass('dead')) {
       selector.removeClass('dead');
+      parent.addClass('hover');
+      shadow.addClass('shadow-moving');
     }
 
     //on reset
@@ -46,6 +66,8 @@ var Animate = (function() {
     clearInterval(blinkTimer);
     selector.removeClass();
     selector.addClass('dead');
+    parent.removeClass('hover');
+    shadow.removeClass('shadow-moving');
   };
 
   return this;

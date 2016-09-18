@@ -6,6 +6,10 @@ dropping food increase food 1
 dropping medicine increase happiness and rest 2
 */
 
+/*
+instead of timer a set number of moves until a decrement action happens (timer happens if no choice is made)
+*/
+
 var Kygotchi = (function(animate, StateMachine, dragula) {
   // fetch states from LocalStorage
   var localSettings = localStorage.getItem('gotchi') ? JSON.parse(localStorage.getItem('gotchi')) : {};
@@ -38,7 +42,7 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
     bindings = $.extend(bindings, options.bindings);
 
     $.each(bindings, function(method, selector) {
-      $(selector).on('click', ky[method]);
+        $(selector).on('click', ky[method]);
     });
 
     StateMachine.create({
@@ -47,13 +51,18 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
         {'neutral' : ky.neutral},
         {'sad' : ky.sad},
         {'dead' : ky.dead},
+
+        {'dragSleep' : ky.dragSleep},
         {'sleep' : ky.sleep},
-        {'wake' : ky.wake},
-        {'eat' : ky.eat},
-        {'play' : ky.play},
+
         {'dragFood' : ky.dragFood},
-        {'medicine' : ky.medicine},
-        {'dragMedicine' : ky.dragMedicine}
+        {'food' : ky.food},
+
+        {'dragPlay' : ky.dragPlay},
+        {'play' : ky.play},
+
+        {'dragMedicine' : ky.dragMedicine},
+        {'medicine' : ky.medicine}
       ],
       onUpdate : function() {
         decrementStats();
@@ -69,7 +78,7 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
         setDecStats();
 
         switch(state) {
-          case 'sleep':
+          case 'dragSleep':
             removeStat(['rest']);
           break;
           case 'dragFood':
@@ -78,6 +87,9 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
           case 'dragMedicine':
             removeStat(['rest', 'happiness']);
           break;
+          case 'dragPlay':
+            removeStat(['happiness']);
+          break;
         }
       }
     });
@@ -85,7 +97,7 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
     /*BEGIN Drag & Drop*/
     drake = dragula([
         $('#drop-target')[0],
-        $('#controls')[0]
+        $('#controls')[0],
       ], {
         revertOnSpill: true,
         copy: true
@@ -98,10 +110,10 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
         return;
       }
 
-      if($(el).hasClass('food')) {
-        ky.dragFood();
-      } else if($(el).hasClass('medicine')) {
-        ky.dragMedicine();
+      var role = $(el).data().role,
+        method = 'drag' + role.charAt(0).toUpperCase() + role.slice(1);
+      if(typeof ky[method] == 'function') {
+        ky[method]();
       }
     });
 
@@ -109,10 +121,8 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
     drake.on('drop', function(el, target, src) {
       $(target).empty();
 
-      if($(el).hasClass('food')) {
-        ky.eat();
-      } else if($(el).hasClass('medicine')) {
-        ky.medicine($(src).find('.medicine'));
+      if(typeof ky[$(el).data().role] == 'function') {
+        ky[$(el).data().role]();
       }
     });
 
@@ -233,24 +243,30 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
   };
 
   ky.sleep = function() {
-    if(ky.restLevel < maxThreshold) {
+    var currState = StateMachine.getCurrentState();
+
+    if(ky.restLevel < maxThreshold && currState !== 'sleep') {
       ky.restLevel++;
       StateMachine.pushState('sleep');
       animate.to('sleep');
+      ky.updateMeters();
+
+      var sleepingTO = setTimeout(function() {
+        StateMachine.pushState(getHealthState());
+        animate.to(getHealthState());
+        clearTimeout(sleepingTO);
+      }, 1000);
     }
   };
 
-  ky.wake = function() {
-    applyHealthState();
-  };
-
-  ky.eat = function() {
+  ky.food = function() {
     var currState = StateMachine.getCurrentState();
 
-    if(ky.foodLevel < maxThreshold && currState !== 'eat') {
+    if(ky.foodLevel < maxThreshold && currState !== 'food') {
       ky.foodLevel++;
-      StateMachine.pushState('eat');
-      animate.to('eat');
+      StateMachine.pushState('food');
+      animate.to('food');
+      ky.updateMeters();
 
       var eatingTO = setTimeout(function() {
         StateMachine.pushState(getHealthState());
@@ -260,13 +276,36 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
     }
   };
 
+  ky.dragSleep = function() {
+    StateMachine.pushState('dragSleep');
+    animate.to('drag-sleep');
+  };
+
   ky.dragFood = function() {
     StateMachine.pushState('dragFood');
     animate.to('drag-food');
   };
 
+  ky.dragPlay = function() {
+    StateMachine.pushState('dragPlay');
+    animate.to('drag-play');
+  };
+
   ky.play = function() {
-    console.log('my current state is ' + StateMachine.getCurrentState());
+    var currState = StateMachine.getCurrentState();
+
+    if(ky.happinessLevel < maxThreshold && currState !== 'play') {
+      ky.happinessLevel++;
+      StateMachine.pushState('play');
+      animate.to('play');
+      ky.updateMeters();
+
+      var playingTO = setTimeout(function() {
+        StateMachine.pushState(getHealthState());
+        animate.to(getHealthState());
+        clearTimeout(playingTO);
+      }, 500);
+    }
   };
 
   ky.dragMedicine = function() {
@@ -282,16 +321,13 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
       ky.happinessLevel += ky.happinessLevel < maxThreshold-1 ? 2 : 0;
       ky.restLevel += ky.restLevel < maxThreshold-1 ? 2 : 0;
       medicineCount--;
+      ky.updateMeters();
 
       var medsTO = setTimeout(function() {
         StateMachine.pushState(getHealthState());
         animate.to(getHealthState());
         clearTimeout(medsTO);
       }, 500);
-
-      if(!medicineCount) {
-        $(el).remove();
-      }
     }
   };
 
@@ -309,6 +345,14 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
     }
 
     ky.init(bindings);
+  };
+
+  /*
+  * updates the stat meters
+  * uses debugStats until live
+  */
+  ky.updateMeters = function() {
+    debugStats();
   };
 
   /*
