@@ -8,19 +8,83 @@
   50% { -webkit-transform: translateY(-4px); }
 }
 
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
 @keyframes shadow {
   0% { -webkit-filter: blur(0px);  }
   50% { -webkit-filter: blur(1px); -webkit-transform: scale(.9); }
 }
 
 @keyframes eating {
-  0% { background-position: -111px -439px; }
-  50% { background-position: -223px -439px; }
+  0% { background-position: 0 -1050px; }
+  50% { background-position: 0 -1500px; }
+}
+
+@keyframes playing {
+  0% { -webkit-transform: rotate(0deg) }
+  25% { -webkit-transform: rotate(-10deg) }
+  50% { -webkit-transform: rotate(0deg) }
+  75% { -webkit-transform: rotate(10deg) }
+}
+
+@keyframes heartbeat {
+  0% { -webkit-transform: scale(1) }
+  25% { -webkit-transform: scale(.8) }
+  50% { -webkit-transform: scale(1.1) }
+  75% { -webkit-transform: scale(.8) }
+}
+
+@keyframes wiggle {
+  0% { -webkit-transform: rotate(0deg) }
+  25% { -webkit-transform: rotate(-20deg) }
+  50% { -webkit-transform: rotate(0deg) }
+  75% { -webkit-transform: rotate(20deg) }
+}
+
+@keyframes stretch {
+  0% { -webkit-transform: scaleY(1) }
+  25% { -webkit-transform: scaleY(1.1) }
+  50% { -webkit-transform: scaleY(1) }
+  75% { -webkit-transform: scaleY(.9) }
+}
+
+@keyframes rotate-full {
+  100% { -webkit-transform: rotate(360deg) scale(.8); }
+}
+
+@keyframes poof {
+  0% {
+    background-position: 0 0;
+    width: 71px;
+    height: 53px;
+    -webkit-transform: translateY(-50%) translateX(-50%);
+  }
+  25% {
+    background-position: 0px -57px;
+    width: 142px;
+    height: 115px;
+    -webkit-transform: translateY(-50%) translateX(-50%);
+  }
+  50% {
+    background-position: 0px -172px;
+    width: 163px;
+    height: 128px;
+  }
+  75% {
+    background-position: 0px -302px;
+    width: 213px;
+    height: 188px;
+  }
 }
 
 body {
   font-family: sans-serif;
   font-size: 16px;
+  background: #536879;
+  overflow: hidden;
 }
 
 *, *:after, *:before {
@@ -28,107 +92,231 @@ body {
 }
 
 .shadow {
-  background:#ccc;
+  background:#414E67;
   width: 60px;
   height: 15px;
   border-radius: 50%;
   margin: 0 auto;
   position: relative;
   z-index: 0;
-  animation: shadow 1s linear infinite;
+
+  &.shadow-moving {
+    animation: shadow 1s linear infinite;
+  }
 }
 
 #debug {
   font-size: 0.8rem;
   padding: 1em;
+  display: inline-block;
 }
 
 .hover {
   animation: hover 1s linear infinite;
 }
 
-.sprite {
-  background: url('../img/faces.svg') 0 0 no-repeat;
+.faces-sprite {
+  background: url('../img/sprite-faces.svg') 0 0 no-repeat;
+}
+.extras-sprite {
+    background: url('../img/sprite-extras.svg') 0 0 no-repeat;
+}
+
+.poof {
+  &.poof-in {
+    background: url('../img/sprite-clouds.svg') 0 0 no-repeat;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 2;
+    animation: poof .5s steps(1, end) 1;
+  }
 }
 
 #gotchi {
-  @extend .sprite;
+  @extend .faces-sprite;
   display: block;
   width: 112px;
   height: 144px;
   position: relative;
-  margin: 0 auto;
   z-index: 1;
+  margin: 0 auto;
 
   &.blink {
-    background-position: -112px 0;
+    background-position: 0 -610px;
   }
 
   &.happy {
-    background-position: 0px -145px;
+    background-position: 0px -146px;
     width: 114px;
     height: 145px;
     &.blink {
-      background-position: -114px -145px;
+      background-position: 0 -756px;
     }
   }
 
   &.dead {
-    background-position: -223px -293px;
-    transform: rotate(10deg);
+    background-position: 0 -1355px;
+    transform: rotate(20deg);
   }
 
   &.sad {
-    background-position: 0px -292px;
+    background-position: 0 -293px;
     height: 146px;
     &.blink {
-      background-position: -111px -292px;
+      background-position: 0 -903px;
     }
   }
 
   &.sleep {
     @extend .blink;
+
+    &:before {
+      content: '';
+      @extend .extras-sprite;
+      background-position: -374px 0;
+      width: 120px;
+      height: 152px;
+      position: absolute;
+      top: -16px;
+      left: 7px;
+    }
   }
 
-  &.eat {
-    background-position: -111px -439px;
-    height: 161px;
+  &.food {
+    height: 158px;
     animation: eating .2s steps(1, end) infinite;
   }
 
+  &.play {
+    background-position: 0 -756px;
+    animation: playing 250ms 1;
+  }
+
   &.medicine {
-    background-position: -230px -146px;
+    background-position: 0 -1208px;
     height: 147px;
   }
 
   &.drag-food,
   &.drag-medicine {
-    background-position: 0px -439px;
+    background-position: 0 -438px;
     height: 159px;
   }
 }
 
-.food.draggable {
-  @extend .sprite;
-  background-position: -224px 0px;
-  width: 80px;
-  height: 44px;
+.draggable {
+  cursor: grab;
+  cursor: -webkit-grab;
+
+  &:active,
+  &:focus {
+    cursor: grabbing;
+    cursor: -webkit-grabbing;
+  }
 }
 
-.medicine.draggable {
-  @extend .sprite;
-  background-position: -307px -39px;
-  width: 32px;
-  height: 104px;
+.draggable {
+  @extend .extras-sprite;
 
+  &.food {
+    background-position: 0 0;
+    width: 80px;
+    height: 45px;
+
+    &:hover  {
+      animation: wiggle .75s linear infinite;
+    }
+
+    &:active {
+      animation: none;
+      -webkit-transform: scale(1);
+    }
+  }
+
+  &.medicine {
+    background-position: -193px -22px;
+    width: 33px;
+    height: 82px;
+
+    &:hover  {
+      animation: wiggle .75s linear infinite;
+    }
+
+    &:active {
+      animation: none;
+      -webkit-transform: scale(1);
+    }
+  }
+
+  &.play {
+    background-position: -131px 0;
+    width: 62px;
+    height: 63px;
+
+    &:hover  {
+      animation: heartbeat .75s linear infinite;
+    }
+
+    &:active {
+      animation: none;
+      -webkit-transform: scale(1);
+    }
+  }
+
+  &.sleep {
+    background-position: -284px 0;
+    width: 90px;
+    height: 79px;
+
+    &:hover  {
+      animation: stretch .75s linear infinite;
+    }
+
+    &:active {
+      animation: none;
+      -webkit-transform: scale(1);
+    }
+  }
+}
+
+.reset {
+  @extend .extras-sprite;
+  position: absolute;
+  top: 2em;
+  right: 2em;
+  cursor: pointer;
+  text-indent: -9999px;
+  background-position: -865px 0;
+  height: 72px;
+  width: 72px;
+  -webkit-transform: rotate(0deg) scale(.8);
+
+  &:hover {
+    animation: rotate-full 1s linear infinite;
+  }
+}
+
+.controls {
+  width: 100%;
+  margin: 0 auto;
+  max-width: 18em;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.non-draggable {
+  position: relative;
 }
 
 #drop-target {
   display: block;
+  opacity: 0;
   width: 100%;
-  height: 50%;
+  height: 100%;
   position: absolute;
-  bottom: 0;
 
   * {
     margin: 0 auto;

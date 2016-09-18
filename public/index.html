@@ -5,34 +5,25 @@
     <title>Kyler Berry</title>
   </head>
   <link rel="stylesheet" href="css/main.css">
-
   <script src="js/built.js" type="text/javascript"></script>
-
   <body>
+  	<div id="reset" class="reset" title="Try Again?">Reset</div>
     <div id="debug"></div>
-
-    <div>
+    <div class="non-draggable">
+    	<div class="poof"></div>
       <div class="hover">
-        <div id="accessory"></div>
-        <div id="gotchi">
+        <div id="gotchi" class="startup">
           <div id="drop-target"></div>
         </div>
       </div>
-      <div class="shadow"></div>
+      <div class="shadow shadow-moving"></div>
     </div>
 
-    <div id="controls">
-      <div class="food draggable"></div>
-      <div class="medicine draggable"></div>
-    </div>
-
-    <div style="z-index: 1; position: relative;">
-      <button id="play">Play</button>
-      <button id="sleep">Sleep</button>
-      <button id="wake">Wake</button>
-      <!-- <button id="medicine">Medicine</button> -->
-      <button id="reset">Reset</button>
+    <div id="controls" class="controls">
+    	<div data-role="sleep" class="sleep draggable"></div>
+      <div data-role="food" class="food draggable"></div>
+      <div data-role="play" class="play draggable"></div>
+      <div data-role="medicine" class="medicine draggable"></div>
     </div>
   </body>
-
 </html>
