@@ -28,7 +28,21 @@ module.exports = function(grunt) {
             dest: "src/js/vendor"
           }
         ]
-      }
+      },
+        files: [
+          {
+            cwd: '/',
+            expand: true,
+            src: "index.html",
+            dest: "public/"
+          },
+          {
+            cwd: 'assets/img',
+            src: '*',
+            dest: 'public/img',
+            expand: true
+          }
+        ]
     },
     concat: {
       dist: {
