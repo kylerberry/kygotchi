@@ -29,12 +29,12 @@ module.exports = function(grunt) {
           }
         ]
       },
+      assets: {
         files: [
           {
-            cwd: '/',
-            expand: true,
             src: "index.html",
-            dest: "public/"
+            dest: "public/",
+            expand: true
           },
           {
             cwd: 'assets/img',
@@ -43,6 +43,7 @@ module.exports = function(grunt) {
             expand: true
           }
         ]
+      }
     },
     concat: {
       dist: {
