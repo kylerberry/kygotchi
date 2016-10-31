@@ -16,7 +16,6 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
 
   var defaults = {
     birthday: new Date('September 22, 1987'),
-    isSleeping: false,
     foodLevel: 10,
     restLevel: 10,
     happinessLevel: 10,
@@ -26,10 +25,9 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
   var ky = $.extend(ky, defaults, localSettings);
 
   var bindings = {},
-    maxThreshold = 15, //limit on health and other states
-    timeInterval = 1000, //time interval for timePasses()
+    maxThreshold = 10, //limit on health and other states
+    timeInterval = 3000,
     timer = null,
-    medicineCount = 2, //number of medicines available
     mainEl = {},
     drake = null, //dragula instance
     decStats = ['happiness', 'rest', 'food']; //stat watchers
@@ -72,6 +70,8 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
         } else {
           ky.dead();
         }
+
+        ky.updateMeters();
       },
       onStateChange : function(state) {
         //reset the stats to watch
@@ -139,7 +139,6 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
 
     timer = startTimer();
 
-    medicineCount = 2;
     mainEl = options.element ? options.element : mainEl; //save this in the animator?
     animate.init(mainEl);
     applyHealthState();
@@ -167,11 +166,11 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
 
     var health = ky.calcHealth();
 
-    if(health > 8) {
+    if(health > 7) {
       return 'happy';
-    } else if(health > 5 && health <= 8) {
+    } else if(health > 4 && health <= 7) {
       return 'neutral';
-    } else if(health <= 5 && health > 2) {
+    } else if(health <= 4 && health > 0) {
       return 'sad';
     } else {
       return 'dead';
@@ -315,12 +314,11 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
 
   ky.medicine = function(el) {
     var currState = StateMachine.getCurrentState();
-    if(medicineCount && currState !== 'medicine') {
+    if(currState !== 'medicine') {
       StateMachine.pushState('medicine');
       animate.to('medicine');
       ky.happinessLevel += ky.happinessLevel < maxThreshold-1 ? 2 : 0;
       ky.restLevel += ky.restLevel < maxThreshold-1 ? 2 : 0;
-      medicineCount--;
       ky.updateMeters();
 
       var medsTO = setTimeout(function() {
@@ -345,14 +343,6 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
     }
 
     ky.init(bindings);
-  };
-
-  /*
-  * updates the stat meters
-  * uses debugStats until live
-  */
-  ky.updateMeters = function() {
-    debugStats();
   };
 
   /*
@@ -410,23 +400,58 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
   * sets game timer
   */
   var startTimer = function() {
-    debugStats();
+    ky.updateMeters();
     return setInterval(function() {
       StateMachine.update();
-      debugStats();
+      ky.updateMeters();
     }, timeInterval);
+  };
+
+  var getColorByNumber = function(num) {
+    var colors = {
+      low:'#C34227',
+      med:'#DDBF41',
+      high:'#94AF3C'
+    };
+
+    if(num < 40) {
+      return colors.low;
+    }
+
+    if(num < 70) {
+      return colors.med;
+    }
+
+    return colors.high;
   };
 
   /*
   * Output properties for debugging
   */
-  var debugStats = function() {
-    $('#debug').html(
-      'healthLevel: ' + ky.calcHealth() + '<br/>' +
-      'foodLevel: ' + ky.foodLevel + '<br/>' +
-      'happinessLevel: ' + ky.happinessLevel + '<br/>' +
-      'restLevel: ' + ky.restLevel + '<br/>'
-    );
+  ky.updateMeters = function() {
+    var meters = $('#meters').children();
+
+    meters.each(function(i, meter) {
+      var meter = $(meter),
+        level = null;
+
+      switch(meter.data().role) {
+        case 'food':
+          level = ky.foodLevel * 10;
+        break;
+        case 'happy':
+          level = ky.happinessLevel * 10;
+        break;
+        case 'health':
+          level = ky.calcHealth() * 10;
+        break;
+        case 'rest':
+          level = ky.restLevel * 10;
+        break;
+      }
+
+      meter.find('span').css({'width' : level + '%', 'background' : getColorByNumber(level)});
+    });
   };
 
   return ky;

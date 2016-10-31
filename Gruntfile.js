@@ -93,6 +93,18 @@ module.exports = function(grunt) {
               'public/css/main.css': 'src/sass/main.scss'
           }
       }
+    },
+    postcss: {
+      options: {
+        map: true, // inline sourcemaps
+
+        processors: [
+          require('autoprefixer')({browsers: 'last 2 versions'}), // add vendor prefixes
+        ]
+      },
+      dist: {
+        src: 'public/css/main.css'
+      }
     }
   });
 
@@ -101,9 +113,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks("grunt-contrib-copy");
   grunt.loadNpmTasks("grunt-contrib-concat");
   grunt.loadNpmTasks("grunt-contrib-uglify");
+  grunt.loadNpmTasks("grunt-postcss");
 
 
   // Default task(s)
-  grunt.registerTask("default", ["copy", "sass", "concat", "uglify"]);
+  grunt.registerTask("default", ["copy", "sass", "concat", "uglify", "postcss"]);
 
 };
