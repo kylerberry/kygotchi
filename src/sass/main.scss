@@ -3,9 +3,13 @@
 
 @include normalize;
 
+$goodColor : #94AF3C;
+$mehColor : #DDBF41;
+$blaColor : #C34227;
+
 @keyframes hover {
-  0% { -webkit-transform: translateY(0px); }
-  50% { -webkit-transform: translateY(-4px); }
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
 }
 
 @keyframes fade-in {
@@ -14,8 +18,8 @@
 }
 
 @keyframes shadow {
-  0% { -webkit-filter: blur(0px);  }
-  50% { -webkit-filter: blur(1px); -webkit-transform: scale(.9); }
+  0% { filter: blur(0px);  }
+  50% { filter: blur(1px); transform: scale(.9); }
 }
 
 @keyframes eating {
@@ -24,35 +28,35 @@
 }
 
 @keyframes playing {
-  0% { -webkit-transform: rotate(0deg) }
-  25% { -webkit-transform: rotate(-10deg) }
-  50% { -webkit-transform: rotate(0deg) }
-  75% { -webkit-transform: rotate(10deg) }
+  0% { transform: rotate(0deg) }
+  25% { transform: rotate(-10deg) }
+  50% { transform: rotate(0deg) }
+  75% { transform: rotate(10deg) }
 }
 
 @keyframes heartbeat {
-  0% { -webkit-transform: scale(1) }
-  25% { -webkit-transform: scale(.8) }
-  50% { -webkit-transform: scale(1.1) }
-  75% { -webkit-transform: scale(.8) }
+  0% { transform: scale(1) }
+  25% { transform: scale(.8) }
+  50% { transform: scale(1.1) }
+  75% { transform: scale(.8) }
 }
 
 @keyframes wiggle {
-  0% { -webkit-transform: rotate(0deg) }
-  25% { -webkit-transform: rotate(-20deg) }
-  50% { -webkit-transform: rotate(0deg) }
-  75% { -webkit-transform: rotate(20deg) }
+  0% { transform: rotate(0deg) }
+  25% { transform: rotate(-20deg) }
+  50% { transform: rotate(0deg) }
+  75% { transform: rotate(20deg) }
 }
 
 @keyframes stretch {
-  0% { -webkit-transform: scaleY(1) }
-  25% { -webkit-transform: scaleY(1.1) }
-  50% { -webkit-transform: scaleY(1) }
-  75% { -webkit-transform: scaleY(.9) }
+  0% { transform: scaleY(1) }
+  25% { transform: scaleY(1.1) }
+  50% { transform: scaleY(1) }
+  75% { transform: scaleY(.9) }
 }
 
 @keyframes rotate-full {
-  100% { -webkit-transform: rotate(360deg) scale(.8); }
+  100% { transform: rotate(360deg) scale(.8); }
 }
 
 @keyframes poof {
@@ -60,13 +64,13 @@
     background-position: 0 0;
     width: 71px;
     height: 53px;
-    -webkit-transform: translateY(-50%) translateX(-50%);
+    transform: translateY(-50%) translateX(-50%);
   }
   25% {
     background-position: 0px -57px;
     width: 142px;
     height: 115px;
-    -webkit-transform: translateY(-50%) translateX(-50%);
+    transform: translateY(-50%) translateX(-50%);
   }
   50% {
     background-position: 0px -172px;
@@ -207,12 +211,12 @@ body {
 
 .draggable {
   cursor: grab;
-  cursor: -webkit-grab;
+  cursor: grab;
 
   &:active,
   &:focus {
     cursor: grabbing;
-    cursor: -webkit-grabbing;
+    cursor: grabbing;
   }
 }
 
@@ -230,7 +234,7 @@ body {
 
     &:active {
       animation: none;
-      -webkit-transform: scale(1);
+      transform: scale(1);
     }
   }
 
@@ -245,7 +249,7 @@ body {
 
     &:active {
       animation: none;
-      -webkit-transform: scale(1);
+      transform: scale(1);
     }
   }
 
@@ -260,7 +264,7 @@ body {
 
     &:active {
       animation: none;
-      -webkit-transform: scale(1);
+      transform: scale(1);
     }
   }
 
@@ -275,7 +279,7 @@ body {
 
     &:active {
       animation: none;
-      -webkit-transform: scale(1);
+      transform: scale(1);
     }
   }
 }
@@ -290,10 +294,48 @@ body {
   background-position: -865px 0;
   height: 72px;
   width: 72px;
-  -webkit-transform: rotate(0deg) scale(.8);
+  transform: rotate(0deg) scale(.8);
 
   &:hover {
     animation: rotate-full 1s linear infinite;
+  }
+}
+
+#meters {
+  margin: 2em 0 0 2em;
+}
+
+.meters {
+  &>* {
+    border: 2px solid #111;
+    border-bottom: 0;
+    width: 200px;
+    position: relative;
+    clear: both;
+    position: relative;
+    text-align: center;
+
+    &:last-child {
+      border-bottom: 2px solid #111;
+    }
+
+    strong {
+      color: white;
+      position: relative;
+      z-index: 2;
+      line-height: 2em;
+    }
+
+    span {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      z-index: 1;
+      transition: .3s width;
+    }
   }
 }
 
@@ -307,8 +349,9 @@ body {
   align-items: center;
 }
 
-.non-draggable {
+.main {
   position: relative;
+  margin-top: 1em;
 }
 
 #drop-target {
