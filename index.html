@@ -7,10 +7,17 @@
   <link rel="stylesheet" href="css/main.css">
   <script src="js/built.js" type="text/javascript"></script>
   <body>
-  	<div id="reset" class="reset" title="Try Again?">Reset</div>
-    <div id="debug"></div>
-    <div class="non-draggable">
-    	<div class="poof"></div>
+    <div id="reset" class="reset" title="Try Again?">Reset</div>
+
+    <div id="meters" class="meters">
+      <div data-role="health" class="health-meter"><strong>Health</strong><span></span></div>
+      <div data-role="food" class="food-meter"><strong>Food</strong><span></span></div>
+      <div data-role="happy" class="happy-meter"><strong>Happiness</strong><span></span></div>
+      <div data-role="rest" class="rest-meter"><strong>Rest</strong><span></span></div>
+    </div>
+
+    <div class="main">
+      <div class="poof"></div>
       <div class="hover">
         <div id="gotchi" class="startup">
           <div id="drop-target"></div>
@@ -20,7 +27,7 @@
     </div>
 
     <div id="controls" class="controls">
-    	<div data-role="sleep" class="sleep draggable"></div>
+      <div data-role="sleep" class="sleep draggable"></div>
       <div data-role="food" class="food draggable"></div>
       <div data-role="play" class="play draggable"></div>
       <div data-role="medicine" class="medicine draggable"></div>
