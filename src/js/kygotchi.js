@@ -255,6 +255,10 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
         animate.to(getHealthState());
         clearTimeout(sleepingTO);
       }, 1000);
+    } else {
+      //maxed out (too rested)
+      StateMachine.pushState(getHealthState());
+      animate.to(getHealthState());
     }
   };
 
@@ -272,6 +276,10 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
         animate.to(getHealthState());
         clearTimeout(eatingTO);
       }, 500);
+    } else {
+      //maxed out (too full)
+      StateMachine.pushState(getHealthState());
+      animate.to(getHealthState());
     }
   };
 
@@ -304,6 +312,10 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
         animate.to(getHealthState());
         clearTimeout(playingTO);
       }, 500);
+    } else {
+      //maxed out (too happy??)
+      StateMachine.pushState(getHealthState());
+      animate.to(getHealthState());
     }
   };
 
