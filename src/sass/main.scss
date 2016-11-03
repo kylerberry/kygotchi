@@ -56,7 +56,7 @@ $blaColor : #C34227;
 }
 
 @keyframes rotate-full {
-  100% { transform: rotate(360deg) scale(.8); }
+  100% { transform: rotate(360deg) scale(.7); }
 }
 
 @keyframes poof {
@@ -211,12 +211,24 @@ body {
 
 .draggable {
   cursor: grab;
-  cursor: grab;
+  cursor: -webkit-grab;
+  cursor: -moz-grab;
 
   &:active,
   &:focus {
     cursor: grabbing;
-    cursor: grabbing;
+    cursor: -webkit-grabbing;
+    cursor: -moz-grabbing;
+  }
+}
+
+.game-over {
+  .draggable {
+    cursor: default;
+
+    &:hover {
+      animation: none!important;
+    }
   }
 }
 
@@ -284,28 +296,120 @@ body {
   }
 }
 
+.controls {
+  width: 100%;
+  margin: 0 auto;
+  max-width: 18em;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.main {
+  position: relative;
+  margin-top: 1em;
+  height: 175px; //fixes movement of icons on dragging states
+}
+
+#drop-target {
+  display: block;
+  opacity: 0;
+  width: 100%;
+  height: 130%;
+  bottom: 0;
+  position: absolute;
+
+  * {
+    margin: 0 auto;
+  }
+}
+
+.scoreboard {
+  margin: 1em auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes rota {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes fill {
+  0%        { opacity: 0; }
+  50%, 100% { opacity: 1; }
+}
+
+@keyframes mask {
+  0%        { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.timer-wrapper {
+  height: 72px;
+  width: 72px;
+}
+
+.timer {
+  height: 72px;
+  width: 72px;
+  position: relative;
+
+  .pie {
+    width: 50%;
+    height: 100%;
+    position: absolute;
+    background: #ACB9C3;
+    border: 16px solid #536879;
+    transform-origin: 100% 50%;
+  }
+
+  .spinner {
+    border-radius: 125px 0 0 125px;
+    z-index: 200;
+    border-right: none;
+    animation: rota 3s linear infinite;
+  }
+
+  .filler {
+    border-radius: 0 125px 125px 0;
+    z-index: 100;
+    border-left: none;
+    animation: fill 3s steps(1, end) infinite;
+    left: 50%;
+    opacity: 0;
+  }
+
+  .mask {
+    width: 50%;
+    height: 100%;
+    position: absolute;
+    z-index: 300;
+    opacity: 1;
+    background: #536879;
+    animation: mask 3s steps(1, end) infinite;
+  }
+}
+
 .reset {
   @extend .extras-sprite;
-  position: absolute;
-  top: 2em;
-  right: 2em;
   cursor: pointer;
   text-indent: -9999px;
   background-position: -865px 0;
   height: 72px;
   width: 72px;
-  transform: rotate(0deg) scale(.8);
+  transform: rotate(0deg) scale(.7);
 
   &:hover {
     animation: rotate-full 1s linear infinite;
   }
 }
 
-#meters {
-  margin: 2em 0 0 2em;
-}
-
 .meters {
+  margin: 0 1em 1em;
+
   &>* {
     border: 2px solid #111;
     border-bottom: 0;
@@ -336,32 +440,5 @@ body {
       z-index: 1;
       transition: .3s width;
     }
-  }
-}
-
-.controls {
-  width: 100%;
-  margin: 0 auto;
-  max-width: 18em;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  align-items: center;
-}
-
-.main {
-  position: relative;
-  margin-top: 1em;
-}
-
-#drop-target {
-  display: block;
-  opacity: 0;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-
-  * {
-    margin: 0 auto;
   }
 }
