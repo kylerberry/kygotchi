@@ -72,7 +72,7 @@ module.exports = function(grunt) {
       options: {
         mangle: true,
         screwIE8: true,
-        sourceMap: true,
+        sourceMap: false,
         compress: true
       },
       build: {
@@ -96,7 +96,7 @@ module.exports = function(grunt) {
     },
     postcss: {
       options: {
-        map: true, // inline sourcemaps
+        map: false, // inline sourcemaps
 
         processors: [
           require('autoprefixer')({browsers: 'last 2 versions'}), // add vendor prefixes
