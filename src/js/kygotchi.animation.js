@@ -26,6 +26,7 @@ var Animate = (function() {
 
     //remove dead look on restart
     if(selector.hasClass('dead')) {
+      $('body').removeClass('game-over');
       selector.removeClass('dead');
       parent.addClass('hover');
       shadow.addClass('shadow-moving');
@@ -66,6 +67,7 @@ var Animate = (function() {
     clearInterval(blinkTimer);
     selector.removeClass();
     selector.addClass('dead');
+    $('body').addClass('game-over');
     parent.removeClass('hover');
     shadow.removeClass('shadow-moving');
   };
