@@ -19,7 +19,14 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
     foodLevel: 10,
     restLevel: 10,
     happinessLevel: 10,
-    last_interaction: 'date'
+    last_interaction: 'date',
+    cooldowns: {
+      medicine: {
+        cooldown: false,
+        to_cooldown: 4,
+        intervals: 0
+      }
+    }
   };
 
   var ky = $.extend(ky, defaults, localSettings);
@@ -30,7 +37,8 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
     timer = null,
     mainEl = {},
     drake = null, //dragula instance
-    decStats = ['happiness', 'rest', 'food']; //stat watchers
+    decStats = ['happiness', 'rest', 'food'], //stat watchers
+    intervals = 0;
 
   /*
   * initialize bindings and timer
@@ -41,6 +49,14 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
 
     $.each(bindings, function(method, selector) {
         $(selector).on('click', ky[method]);
+    });
+
+    $.each(ky.cooldowns, function(action) {
+      if(ky.cooldowns[action].cooldown) {
+        $('[data-role=' + action + ']').addClass('cooldown');
+      } else if($('[data-role=' + action + ']').hasClass('cooldown')) {
+        $('[data-role=' + action + ']').removeClass('cooldown');
+      }
     });
 
     StateMachine.create({
@@ -62,7 +78,20 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
         {'dragMedicine' : ky.dragMedicine},
         {'medicine' : ky.medicine}
       ],
-      onUpdate : function() {
+      onUpdate : function(state) {
+        intervals++;
+        $.each(ky.cooldowns, function(action) {
+          if(!ky.cooldowns[action].cooldown) {
+            return;
+          }
+          ky.cooldowns[action].intervals++;
+          if(ky.cooldowns[action].intervals == ky.cooldowns[action].to_cooldown) {
+            ky.cooldowns[action].cooldown = false;
+            ky.cooldowns[action].intervals = 0;
+            $('[data-role=' + action + ']').removeClass('cooldown');
+          }
+        });
+
         decrementStats();
 
         if(ky.isAlive()) {
@@ -105,13 +134,13 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
 
     //dragging item
     drake.on('drag', function(el, src) {
-      if(StateMachine.getCurrentState() == 'sleep') {
+      var role = $(el).data().role;
+      if(StateMachine.getCurrentState() == 'sleep' || (ky.cooldowns[role] && ky.cooldowns[role].cooldown)) {
         drake.cancel();
         return;
       }
 
-      var role = $(el).data().role,
-        method = 'drag' + role.charAt(0).toUpperCase() + role.slice(1);
+      var method = 'drag' + role.charAt(0).toUpperCase() + role.slice(1);
       if(typeof ky[method] == 'function') {
         ky[method]();
       }
@@ -122,7 +151,7 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
       $(target).empty();
 
       if(typeof ky[$(el).data().role] == 'function') {
-        ky[$(el).data().role]();
+        ky[$(el).data().role](el);
       }
     });
 
@@ -325,7 +354,7 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
     animate.to('drag-medicine');
   };
 
-  ky.medicine = function(el) {
+  ky.medicine = function() {
     var currState = StateMachine.getCurrentState();
     if(currState !== 'medicine') {
       StateMachine.pushState('medicine');
@@ -333,6 +362,8 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
       ky.happinessLevel += ky.happinessLevel < maxThreshold-1 ? 2 : 0;
       ky.restLevel += ky.restLevel < maxThreshold-1 ? 2 : 0;
       ky.updateMeters();
+      ky.cooldowns.medicine.cooldown = true;
+      $('.medicine').addClass('cooldown');
 
       var medsTO = setTimeout(function() {
         StateMachine.pushState(getHealthState());
@@ -349,6 +380,13 @@ var Kygotchi = (function(animate, StateMachine, dragula) {
     ky = $.extend(ky, defaults);
     clearInterval(timer);
     unbindActions(true);
+
+    $.each(ky.cooldowns, function(action) {
+        if(ky.cooldowns[action].cooldown) {
+          ky.cooldowns[action].cooldown = false;
+          ky.cooldowns[action].intervals = 0;
+        }
+    });
 
     //reset the clock
     var clockClone = $('#timer').clone();
